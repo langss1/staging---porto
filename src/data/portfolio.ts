@@ -87,22 +87,10 @@ export const PROJECTS = [
         image: "SANI.png",
         year: "2025"
     },
-    {
-        id: 3,
-        title: "GardaWara AI",
-        categories: ["AI", "Mobile"],
-        description: "Flutter-based app using TensorFlow Lite to detect online gambling content in real-time and block it to safeguard users.",
-        techStack: ["Flutter", "TensorFlow Lite", "Gemini AI", "Dart"],
-        githubUrl: "https://github.com/langss1/gardawara",
-        demoUrl: null,
-        image: "Garda.png",
-        year: "2026",
-        award: "1st Place Winner Innovation Competition"
-    },
 
     // IoT PROJECTS
     {
-        id: 4,
+        id: 3,
         title: "Fire Guard IoT",
         categories: ["IoT", "Mobile"],
         description: "Smart home security system combining ESP32, MQTT, and a Flutter app with ML to mitigate fire and gas leaks in real-time.",
@@ -115,7 +103,7 @@ export const PROJECTS = [
 
     // APLICATION / WEB / MOBILE PROJECTS
     {
-        id: 5,
+        id: 4,
         title: "MSU Inventory System",
         categories: ["Web"],
         description: "Web-based facility management for Syamsul 'Ulum Mosque. Digitizes asset tracking and manages loan schedules efficiently.",
@@ -126,18 +114,7 @@ export const PROJECTS = [
         year: "2025"
     },
     {
-        id: 6,
-        title: "GardaWara Official Site",
-        categories: ["Web"],
-        description: "Official portal for GardaWara AI. Educates users on gambling prevention and serves as a secure download center.",
-        techStack: ["Web Design", "HTML/CSS", "Distribution"],
-        githubUrl: "https://github.com/langss1/web-garda",
-        demoUrl: "https://gardawara.site/",
-        image: "gardasite.png",
-        year: "2026"
-    },
-    {
-        id: 7,
+        id: 5,
         title: "Agrivest Crowdfunding",
         categories: ["Mobile"],
         description: "Android-based crowdfunding app connecting investors with local farmers to solve capital access issues in agriculture.",
