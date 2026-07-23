@@ -41,7 +41,15 @@ export async function middleware(request: NextRequest) {
         },
       });
       if (res.ok) {
-        isAuthenticated = true;
+        const userData = await res.json();
+        const userEmail = userData.email;
+        const adminEmail = process.env.ADMIN_EMAIL || 'gilangonwork@gmail.com';
+        
+        if (pathname.startsWith('/admin') && userEmail !== adminEmail) {
+          isAuthenticated = false;
+        } else {
+          isAuthenticated = true;
+        }
       }
     } catch (err) {
       console.error("Middleware auth verification failed", err);

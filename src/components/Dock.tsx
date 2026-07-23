@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Linkedin, Github, Mail, Download, Menu, Instagram, FileText } from "lucide-react";
 import { PROFILE } from "@/data/portfolio";
 import { useState, useEffect } from "react";
+import { sanitizeUrl } from "@/lib/security";
 
 export default function Dock() {
     const [isVisible, setIsVisible] = useState(false);
@@ -72,12 +73,12 @@ export default function Dock() {
                             <SocialIcon href={profileData?.linkedin_url || PROFILE.socials.linkedin} icon={<Linkedin size={20} />} label="LinkedIn" />
                             <SocialIcon href={profileData?.github_url || PROFILE.socials.github} icon={<Github size={20} />} label="Github" />
                             <SocialIcon href={profileData?.instagram_url || "https://www.instagram.com/gilangwasis/"} icon={<Instagram size={20} />} label="Instagram" />
-                            <SocialIcon href={profileData?.email || PROFILE.socials.email} icon={<Mail size={20} />} label="Email" />
+                            <SocialIcon href={profileData?.email ? (profileData.email.startsWith('mailto:') ? profileData.email : `mailto:${profileData.email}`) : PROFILE.socials.email} icon={<Mail size={20} />} label="Email" />
 
                             <div className="w-px h-6 bg-slate-200 mx-1" />
 
                             <a
-                                href={profileData?.cv_link || PROFILE.cvLink}
+                                href={sanitizeUrl(profileData?.cv_link || PROFILE.cvLink)}
                                 target="_blank"
                                 className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-black transition-colors"
                             >
@@ -94,7 +95,7 @@ export default function Dock() {
 function SocialIcon({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
     return (
         <motion.a
-            href={href}
+            href={sanitizeUrl(href)}
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ y: -3 }}

@@ -14,6 +14,13 @@ export async function POST(request: Request) {
     const url = new URL(request.url);
     const isCron = url.searchParams.get('cron') === 'true';
 
+    // CSRF Check [M-1]
+    const origin = request.headers.get('origin');
+    const host = request.headers.get('host');
+    if (origin && !origin.includes(host || '')) {
+      return NextResponse.json({ error: 'CSRF Protection Triggered' }, { status: 403 });
+    }
+
     // 0. AUTHENTICATION CHECK [C-1]
     if (isCron) {
       const authHeader = request.headers.get('authorization');

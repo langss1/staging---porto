@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useInView, animate } from "framer-motion";
 import { X, ExternalLink, Github, ChevronRight, Plus, LayoutGrid, Cpu, Shield, Sparkles, Code, ArrowUpRight, ArrowRight } from "lucide-react";
 import { Great_Vibes } from "next/font/google";
 import ImageWithLoader from "./ImageWithLoader";
+import { sanitizeUrl } from "@/lib/security";
 
 const greatVibes = Great_Vibes({
   weight: "400",
@@ -464,7 +465,7 @@ export default function Projects() {
                   {selectedProject.store_links.map((link: any, idx: number) => (
                     <a
                       key={idx}
-                      href={link.url}
+                      href={sanitizeUrl(link.url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full p-5 bg-white border border-[var(--border)] rounded-2xl flex items-center gap-5 hover:border-[var(--text)] hover:shadow-md transition-all group"

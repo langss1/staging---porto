@@ -6,6 +6,7 @@ import ImageWithLoader from "./ImageWithLoader";
 import AnimatedCounter from "./AnimatedCounter";
 import { Great_Vibes } from "next/font/google";
 import { supabase } from "@/lib/supabase";
+import { sanitizeUrl } from "@/lib/security";
 
 const greatVibes = Great_Vibes({
   weight: "400",
@@ -95,7 +96,7 @@ export default function Hero() {
                             className="flex flex-row justify-center md:justify-start gap-2 mt-1"
                         >
                             <a 
-                                href={profileData?.cv_link || PROFILE?.cvLink || "#"} 
+                                href={sanitizeUrl(profileData?.cv_link || PROFILE?.cvLink || "#")} 
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="px-6 py-1.5 md:py-2 bg-[#EFEFEF] hover:bg-[#DBDBDB] text-black text-sm font-semibold rounded-lg transition-colors border border-transparent"

@@ -4,6 +4,7 @@ import { PROFILE } from "@/data/portfolio";
 import { Download, Linkedin, Github, Mail, Instagram, MessageSquarePlus, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import TestimonialForm from "./TestimonialForm";
+import { sanitizeUrl } from "@/lib/security";
 
 const CLOUDS = [
   { id: 1, size: 120, top: "10%", duration: 80, delay: 0, opacity: 0.6 },
@@ -235,7 +236,7 @@ export default function Contact() {
           <div className="flex flex-wrap items-center gap-3 md:gap-4">
             <SocialPill href={profileData?.instagram_url || "https://instagram.com/gilangproject"} icon={<Instagram className="w-4 h-4 md:w-5 md:h-5" />} label="Instagram" />
             <SocialPill href={profileData?.github_url || PROFILE?.socials?.github || "#"} icon={<Github className="w-4 h-4 md:w-5 md:h-5" />} label="Github" />
-            <SocialPill href={profileData?.email || "mailto:gilangonwork@gmail.com"} icon={<Mail className="w-4 h-4 md:w-5 md:h-5" />} label="Email" />
+            <SocialPill href={profileData?.email ? (profileData.email.startsWith('mailto:') ? profileData.email : `mailto:${profileData.email}`) : "mailto:gilangonwork@gmail.com"} icon={<Mail className="w-4 h-4 md:w-5 md:h-5" />} label="Email" />
             <SocialPill href={profileData?.linkedin_url || PROFILE?.socials?.linkedin || "#"} icon={<Linkedin className="w-4 h-4 md:w-5 md:h-5" />} label="LinkedIn" />
             <SocialPill href={profileData?.cv_link || PROFILE?.cvLink || "#"} icon={<Download className="w-4 h-4 md:w-5 md:h-5" />} label="CV" isPrimary />
             
@@ -263,7 +264,7 @@ export default function Contact() {
 function SocialPill({ href, icon, label, isPrimary = false }: { href: string, icon: React.ReactNode, label: string, isPrimary?: boolean }) {
   return (
     <a
-      href={href}
+      href={sanitizeUrl(href)}
       target="_blank"
       rel="noopener noreferrer"
       className={`flex items-center gap-2 px-4 py-2.5 md:px-6 md:py-3 rounded-full text-xs md:text-sm font-bold transition-all duration-300 shadow-sm hover:shadow-md ${
