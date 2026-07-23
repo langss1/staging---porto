@@ -11,7 +11,7 @@ const greatVibes = Great_Vibes({
   display: "swap",
 });
 
-function AnimatedCounter({ to }: { to: number }) {
+function AnimatedCounter({ to, delay = 0, duration = 2.5 }: { to: number; delay?: number; duration?: number }) {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
@@ -19,8 +19,8 @@ function AnimatedCounter({ to }: { to: number }) {
   useEffect(() => {
     if (inView) {
       const controls = animate(0, to, {
-        duration: 2.5,
-        delay: 2.9,
+        duration: duration,
+        delay: delay,
         ease: "easeOut",
         onUpdate(value) {
           setCount(Math.round(value));
@@ -28,7 +28,7 @@ function AnimatedCounter({ to }: { to: number }) {
       });
       return () => controls.stop();
     }
-  }, [inView, to]);
+  }, [inView, to, delay, duration]);
 
   return <span ref={ref}>{count}</span>;
 }
