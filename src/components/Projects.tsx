@@ -144,7 +144,7 @@ export default function Projects() {
           nama: item.title,
           kategori: item.categories?.[0] || 'Web',
           kategories: item.categories || [],
-          foto: item.image ? (item.image.match(/^\d{13}-/) ? `/projects/${item.image}` : `/${item.image}`) : null,
+          foto: item.image ? (item.image.startsWith('http') ? item.image : (item.image.match(/^\d{13}-/) ? `/projects/${item.image}` : `/${item.image}`)) : null,
           deskripsi: item.description,
           tahun: item.year,
           techStack: item.tech_stack,

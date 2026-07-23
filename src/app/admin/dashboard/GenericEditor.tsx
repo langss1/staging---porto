@@ -318,23 +318,29 @@ export default function GenericEditor({ tableName, title, columns }: GenericEdit
                           const file = e.target.files?.[0];
                           if (!file) return;
                           
-                          const formDataData = new FormData();
-                          formDataData.append('file', file);
-                          formDataData.append('folder', tableName);
-
                           try {
-                            const res = await fetch('/api/upload', {
-                              method: 'POST',
-                              body: formDataData
-                            });
-                            const data = await res.json();
-                            if (data.success) {
-                              setFormData({...formData, [col.key]: data.filename});
-                              showToast('Gambar berhasil diunggah', 'success');
-                            } else {
-                              showToast('Gagal mengunggah gambar', 'error');
+                            const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e4);
+                            const filename = `${tableName}/${uniqueSuffix}-${safeName}`;
+
+                            const { data, error } = await supabase.storage
+                              .from('portfolio-files')
+                              .upload(filename, file);
+
+                            if (error) {
+                              throw error;
+                            }
+
+                            if (data) {
+                              const { data: publicUrlData } = supabase.storage
+                                .from('portfolio-files')
+                                .getPublicUrl(data.path);
+                                
+                              setFormData({...formData, [col.key]: publicUrlData.publicUrl});
+                              showToast('Gambar berhasil diunggah ke Supabase', 'success');
                             }
                           } catch (err) {
+                            console.error("Upload error:", err);
                             showToast('Gagal mengunggah gambar', 'error');
                           }
                         }}

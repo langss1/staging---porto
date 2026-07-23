@@ -26,7 +26,7 @@ export default function AdminLogin() {
       setLoading(false);
     } else {
       if (data.session) {
-        document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=86400; SameSite=Lax`;
+        document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=${data.session.expires_in}; SameSite=Lax`;
       }
       // Redirect back to the page they were trying to access, or dashboard by default
       const searchParams = new URLSearchParams(window.location.search);

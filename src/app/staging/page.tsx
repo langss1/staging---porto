@@ -33,7 +33,7 @@ export default function StagingPage() {
     } else {
       if (data.session) {
         // Set cookie manually so the Next.js middleware can read it
-        document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=86400; SameSite=Lax`;
+        document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=${data.session.expires_in}; SameSite=Lax`;
       }
       // Force full page reload so server-side middleware processes the new cookie
       window.location.href = redirectTo;

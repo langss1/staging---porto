@@ -9,7 +9,7 @@ import type { NextRequest } from 'next/server';
  * Supabase v2 stores the session token in a cookie named:
  * sb-{project-ref}-auth-token
  */
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow API routes, static files, and Next.js internals
@@ -26,10 +26,27 @@ export function middleware(request: NextRequest) {
   const authCookie =
     request.cookies.get(authCookieName) ||
     request.cookies.get('sb-access-token') ||
-    // Supabase also sometimes uses this format
     request.cookies.get(`sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token.0`);
 
-  const isAuthenticated = !!authCookie;
+  let isAuthenticated = false;
+
+  if (authCookie && authCookie.value) {
+    // Attempt to verify the token by fetching the user profile from Supabase
+    // This is much safer than just checking if the cookie exists
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`, {
+        headers: {
+          Authorization: `Bearer ${authCookie.value}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+        },
+      });
+      if (res.ok) {
+        isAuthenticated = true;
+      }
+    } catch (err) {
+      console.error("Middleware auth verification failed", err);
+    }
+  }
 
   // Paths that do NOT require authentication
   const publicPaths = ['/admin/login', '/staging'];
