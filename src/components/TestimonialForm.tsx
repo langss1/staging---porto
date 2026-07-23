@@ -117,6 +117,7 @@ export default function TestimonialForm({ isOpen, onClose }: TestimonialFormProp
                     <input 
                       type="text" 
                       required
+                      maxLength={50}
                       placeholder="John Doe"
                       className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                       value={formData.name}
@@ -128,6 +129,7 @@ export default function TestimonialForm({ isOpen, onClose }: TestimonialFormProp
                     <input 
                       type="text" 
                       required
+                      maxLength={50}
                       placeholder="e.g. Project Manager"
                       className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                       value={formData.role}
@@ -140,6 +142,7 @@ export default function TestimonialForm({ isOpen, onClose }: TestimonialFormProp
                   <label className="text-sm font-semibold text-slate-700">Avatar URL (Optional)</label>
                   <input 
                     type="url" 
+                    maxLength={500}
                     placeholder="https://example.com/avatar.png"
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                     value={formData.avatar_url}
@@ -151,6 +154,7 @@ export default function TestimonialForm({ isOpen, onClose }: TestimonialFormProp
                   <label className="text-sm font-semibold text-slate-700">Message <span className="text-red-500">*</span></label>
                   <textarea 
                     required
+                    maxLength={1000}
                     placeholder="Write your comment here..."
                     rows={4}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all resize-none"

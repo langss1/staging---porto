@@ -14,6 +14,20 @@ export async function POST(request: Request) {
     const url = new URL(request.url);
     const isCron = url.searchParams.get('cron') === 'true';
 
+    // 0. AUTHENTICATION CHECK [C-1]
+    if (isCron) {
+      const authHeader = request.headers.get('authorization');
+      if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        return NextResponse.json({ error: 'Unauthorized CRON request' }, { status: 401 });
+      }
+    } else {
+      const cookieHeader = request.headers.get('cookie') || '';
+      // Check for our custom token or Supabase default auth token
+      if (!cookieHeader.includes('sb-access-token') && !cookieHeader.includes('-auth-token=')) {
+        return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 401 });
+      }
+    }
+
     // 1. Fetch current profile to check last_evaluated_at
     const { data: currentProfile, error: profileError } = await supabase
       .from('profile')
@@ -56,6 +70,7 @@ export async function POST(request: Request) {
     }
 
     let newScores: CompetencyScores;
+    let ai_active = false; // [C-2]
     const apiKey = process.env.GEMINI_API_KEY;
     
     if (apiKey && apiKey.length > 10) {
@@ -105,6 +120,7 @@ export async function POST(request: Request) {
           Organization: lowerCaseScores['organization'],
           Impact: lowerCaseScores['impact']
         };
+        ai_active = true; // [C-2] Successfully used AI
       } catch (mlError) {
         console.error("ML Evaluation Failed, falling back to heuristic:", mlError);
         newScores = calculateHeuristicScores(portfolioData);
@@ -131,23 +147,25 @@ export async function POST(request: Request) {
       .select()
       .single();
 
+    // [M-5] Do not return raw DB errors to client
     if (updateError) {
+      console.error("Database Update Error:", updateError);
       return NextResponse.json({ 
         success: false, 
-        message: "Database update failed. Please disable RLS or add an UPDATE policy in Supabase. " + updateError.message,
-        error: updateError
+        message: "Database update failed. Please check server logs."
       }, { status: 400 });
     }
 
     return NextResponse.json({ 
       success: true, 
-      message: "Scores updated successfully via AI Evaluator",
+      message: "Scores updated successfully",
+      ai_active, // [C-2] Expose this to admin panel
       scores: finalScores
     });
 
   } catch (error: any) {
     console.error("API Route Error:", error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, message: "An internal server error occurred." }, { status: 500 });
   }
 }
 

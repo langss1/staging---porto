@@ -13,6 +13,24 @@ const CLOUDS = [
   { id: 5, size: 100, top: "75%", duration: 60, delay: -10, opacity: 0.7 },
 ];
 
+const isValidAvatarUrl = (url: string) => {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    const allowedDomains = [
+      'avatars.githubusercontent.com', 
+      'lh3.googleusercontent.com', 
+      'media.licdn.com',
+      'ui-avatars.com',
+      'supabase.co',
+      'supabase.in'
+    ];
+    return parsed.protocol === 'https:' && allowedDomains.some(domain => parsed.hostname.endsWith(domain));
+  } catch (e) {
+    return false;
+  }
+};
+
 const CloudShape = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
     <path d="M17.5 19c2.485 0 4.5-2.015 4.5-4.5 0-2.316-1.75-4.22-4.004-4.475C17.75 6.72 14.865 4 11.25 4 7.28 4 4.024 7.02 3.54 10.875 1.554 11.275 0 13.06 0 15.25 0 17.87 2.13 20 4.75 20h12.75z" />
@@ -164,7 +182,7 @@ export default function Contact() {
                   >
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-blue-300 rounded-full animate-ping opacity-30"></div>
                     
-                    {activeTestimonial && activeTestimonial.avatar_url ? (
+                    {activeTestimonial && activeTestimonial.avatar_url && isValidAvatarUrl(activeTestimonial.avatar_url) ? (
                       <img src={activeTestimonial.avatar_url} alt="User Satellite" className="relative w-14 h-14 md:w-16 md:h-16 rounded-full object-cover shadow-xl border-4 border-white z-10 hover:scale-110 transition-transform" />
                     ) : (
                       <div className="relative w-14 h-14 md:w-16 md:h-16 bg-white rounded-full shadow-xl flex items-center justify-center text-blue-600 z-10 border-4 border-white hover:scale-110 transition-transform overflow-hidden">
@@ -189,7 +207,7 @@ export default function Contact() {
                             "{activeTestimonial.message}"
                           </p>
                           <div className="flex items-center gap-3">
-                            {activeTestimonial.avatar_url ? (
+                            {activeTestimonial.avatar_url && isValidAvatarUrl(activeTestimonial.avatar_url) ? (
                               <img src={activeTestimonial.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-slate-100" />
                             ) : (
                               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-sm">
