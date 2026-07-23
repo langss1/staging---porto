@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export type ColumnDef = {
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'array' | 'image' | 'project_selector' | 'select_array';
+  type: 'text' | 'textarea' | 'array' | 'image' | 'project_selector' | 'select_array' | 'select';
   options?: string[];
 };
 
