@@ -1,63 +1,82 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-space-grotesk);
+}
+
 :root {
-  --background: #f8fafc;
-  /* White Smoke */
-  --foreground: #0f172a;
-  /* Slate 900 */
+  /* Light Theme / Professional White Aesthetic */
+  --bg: #FAFAFA;
+  --surface: #FFFFFF;
+  --text: #09090B;
+  --text-muted: #52525B;
+  
+  /* Accents */
+  --accent: #2563EB; /* Professional Blue */
+  --accent-2: #059669; /* Professional Green */
+  --brush: #FF5A36; /* Energetic Orange for brush strokes */
+  
+  /* UI Borders / Cards */
+  --border: #E4E4E7;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans), sans-serif;
   overflow-x: hidden;
 }
 
-/* Antigravity Utilities */
+input, textarea, select, button {
+  font-family: inherit;
+}
+
+h1, h2, h3, h4, h5, h6, .display-text {
+  font-family: var(--font-display), sans-serif;
+}
+
+/* Glass UI / Antigravity Style Aux Pane */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
 }
 
 .glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.4));
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.glass-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
+  background: #D4D4D8;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #A1A1AA;
 }
 
-@keyframes shine {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
+/* Text Selection */
+::selection {
+  background-color: rgba(37, 99, 235, 0.2);
+  color: #1D4ED8;
 }

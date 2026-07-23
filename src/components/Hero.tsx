@@ -1,246 +1,183 @@
 "use client";
-import { motion, AnimatePresence, Variants } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { PROFILE } from "@/data/portfolio";
-import { ChevronRight, Download, Linkedin, Github, Terminal, Smartphone, PenTool, Shield, Cpu, Code2 } from "lucide-react";
 import ImageWithLoader from "./ImageWithLoader";
+import AnimatedCounter from "./AnimatedCounter";
+import { Great_Vibes } from "next/font/google";
+import { supabase } from "@/lib/supabase";
 
-// ANIMASI GRADIENT
-const gradientStyle = {
-    backgroundSize: "200% auto",
-    animation: "shine 4s linear infinite"
-};
-
-const ROLES = [
-    { label: "Fullstack Developer", icon: Terminal },
-    { label: "AI Engineer", icon: Cpu },
-    { label: "IoT & Hardware Engineer", icon: Smartphone },
-    { label: "UI / UX Designer", icon: PenTool },
-    { label: "Cyber Security & Forensics", icon: Shield }
-];
+const greatVibes = Great_Vibes({
+  weight: "400",
+  subsets: ["latin"],
+});
 
 export default function Hero() {
-    const [roleIndex, setRoleIndex] = useState(0);
+    const [profileData, setProfileData] = useState<any>(null);
+    const [projectsCount, setProjectsCount] = useState<number>(0);
+    const [experiencesCount, setExperiencesCount] = useState<number>(0);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setRoleIndex((prev) => (prev + 1) % ROLES.length);
-        }, 4000);
-        return () => clearInterval(interval);
+        const fetchStats = async () => {
+            const { data } = await supabase.from('profile').select('*').single();
+            if (data) setProfileData(data);
+            
+            // Fetch total projects + research
+            const { count: projCount } = await supabase.from('projects').select('*', { count: 'exact', head: true });
+            const { count: resCount } = await supabase.from('research').select('*', { count: 'exact', head: true });
+            setProjectsCount((projCount || 0) + (resCount || 0));
+            
+            // Fetch total work experiences
+            const { count: expCount } = await supabase.from('work_experiences').select('*', { count: 'exact', head: true });
+            setExperiencesCount(expCount || 0);
+        };
+        fetchStats();
     }, []);
 
-    const fadeInUp: Variants = {
-        hidden: { opacity: 0, y: 30 },
-        visible: (i: number) => ({
-            opacity: 1,
-            y: 0,
-            transition: { delay: 0.1 * i, duration: 0.8, ease: "easeInOut" }
-        })
-    };
-
-    const CurrentIcon = ROLES[roleIndex].icon;
-
     return (
-        <section className="min-h-[85vh] flex flex-col justify-center px-5 md:px-8 py-20 bg-white relative overflow-hidden">
-
-            <style jsx>{`
-                @keyframes shine {
-                    0% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
-                }
-                @keyframes borderColorCycle {
-                    0% { border-color: #93c5fd; } 
-                    50% { border-color: #1e3a8a; } 
-                    100% { border-color: #93c5fd; } 
-                }
-            `}</style>
-
-            <div className="absolute top-[-20%] right-[-10%] w-[60vh] h-[60vh] bg-blue-50/60 rounded-full blur-[120px] pointer-events-none" />
-
-            <div className="max-w-4xl mx-auto w-full relative z-10">
-
-                {/* 1. HEADER ROW (Side-by-Side Compact) */}
-                <div className="flex items-center gap-5 md:gap-10 mb-8 md:mb-10">
-
-                    {/* AVATAR */}
+        <section id="hero" className="w-full min-h-screen flex flex-col px-4 md:px-12 lg:px-24 bg-[var(--bg)] relative pt-12 md:pt-16 pb-16 md:pb-24">
+            <div className="max-w-4xl w-full flex flex-col gap-6 md:gap-8 relative z-10 mx-auto">
+                
+                {/* TOP ROW: Profile Picture (Left) + Name, Subtitle, Buttons (Right) */}
+                <div className="flex flex-col md:flex-row items-center md:items-center gap-6 md:gap-10 w-full relative z-20">
+                    
+                    {/* LEFT: Profile Picture with Blue Gradient Ring */}
                     <motion.div
-                        custom={0}
-                        initial="hidden"
-                        animate="visible"
-                        variants={fadeInUp}
-                        className="relative shrink-0"
+                        initial={{ opacity: 0, filter: "blur(10px)", scale: 0.9 }}
+                        animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+                        transition={{ delay: 1.2, duration: 1, ease: "easeOut" }}
+                        className="flex-shrink-0 mx-auto md:mx-0"
                     >
-                        <motion.div
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.5 }}
-                            className="relative w-28 h-28 md:w-40 md:h-40 rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/10 p-[4px] bg-gradient-to-r from-blue-400 to-blue-700"
-                        >
-                            <div className="w-full h-full rounded-[calc(1.5rem-4px)] overflow-hidden bg-white">
+                        <div className="w-[160px] h-[160px] md:w-[220px] md:h-[220px] rounded-full p-[3px] md:p-[4px] bg-gradient-to-tr from-cyan-300 via-blue-500 to-blue-800 shadow-lg shadow-blue-500/20">
+                            <div className="w-full h-full rounded-full border-[4px] border-[var(--bg)] overflow-hidden bg-[var(--surface)]">
                                 <ImageWithLoader
-                                    src="Profil.jpeg"
-                                    alt="Gilang Wasis"
-                                    className="w-full h-full object-cover"
+                                    src={profileData?.image_url || "/Profil.jpeg"}
+                                    alt={profileData?.name || "Gilang Wasis"}
+                                    className="w-full h-full object-cover object-center"
                                     priority
                                 />
                             </div>
-                        </motion.div>
-
-                        {/* Wiggle Icon */}
-                        <div className="absolute -bottom-2 -right-2 md:-bottom-3 md:-right-3 p-1.5 bg-white rounded-xl shadow-lg border border-slate-100 z-20">
-                            <motion.div
-                                animate={{ rotate: [0, 10, -10, 0] }}
-                                transition={{ duration: 2, ease: "easeInOut" }}
-                                className="flex items-center justify-center w-7 h-7 md:w-9 md:h-9 bg-blue-600 rounded-lg text-white"
-                            >
-                                <Code2 className="w-4 h-4 md:w-5 md:h-5" />
-                            </motion.div>
                         </div>
                     </motion.div>
 
-                    <div className="flex-1 min-w-0">
+                    {/* RIGHT: Name, Subtitle, and Buttons */}
+                    <div className="flex flex-col justify-center flex-grow w-full gap-3 md:gap-4 text-center md:text-left">
+                        
+                        {/* Name */}
                         <motion.div
-                            custom={1}
-                            initial="hidden"
-                            animate="visible"
-                            variants={fadeInUp}
-                            className="flex items-center gap-2 md:gap-3 mb-1"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 1.0, duration: 0.8, ease: "easeOut" }}
+                            className="w-full flex items-center justify-center md:justify-start"
                         >
-                            <span className="w-6 h-[2px] md:w-8 bg-slate-300"></span>
-                            <span className="text-slate-500 text-sm md:text-base font-black tracking-widest uppercase truncate">HELLO, I AM</span>
-                            <motion.span
-                                animate={{ rotate: [0, 15, -10, 15, 0] }}
-                                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1.5, ease: "easeInOut" }}
-                                className="inline-block origin-bottom-right text-xl md:text-2xl"
-                            >
-                                👋
-                            </motion.span>
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-[var(--text)]">
+                                {profileData?.name || "Gilang Wasis"}<span className="text-blue-500">.</span>
+                            </h1>
                         </motion.div>
 
-                        <motion.h1
-                            custom={2}
-                            initial="hidden"
-                            animate="visible"
-                            variants={fadeInUp}
-                            className="text-[2.5rem] md:text-6xl font-black text-slate-900 tracking-tighter leading-[1.1] relative"
+                        {/* Subtitle / Kata2 - 1 Baris secara Paksa (No Wrap) */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2, duration: 1, ease: "easeOut" }}
+                            className="w-full flex items-center justify-center md:justify-start"
                         >
-                            <span
-                                style={{
-                                    backgroundImage: 'linear-gradient(to right, #2563eb, #60a5fa, #2563eb)',
-                                    ...gradientStyle
-                                }}
-                                className="bg-clip-text text-transparent block md:inline pb-1 w-fit"
+                            <div className="text-[0.75rem] sm:text-sm md:text-base lg:text-lg font-medium tracking-wide md:tracking-wider uppercase text-[var(--text)] text-center md:text-left leading-snug">
+                                Multidisciplinary Engineer<br className="block md:hidden" /><span className="hidden md:inline"> </span>WITH Innovative Problem Solving
+                            </div>
+                        </motion.div>
+
+                        {/* Action Buttons (Instagram Style) */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 1.3, duration: 0.8, ease: "easeOut" }}
+                            className="flex flex-row justify-center md:justify-start gap-2 mt-1"
+                        >
+                            <a 
+                                href={profileData?.cv_link || PROFILE?.cvLink || "#"} 
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-6 py-1.5 md:py-2 bg-[#EFEFEF] hover:bg-[#DBDBDB] text-black text-sm font-semibold rounded-lg transition-colors border border-transparent"
                             >
-                                Gilang
-                            </span>
-                            <span className="text-black block md:inline md:ml-3">
-                                Wasis W.
-                            </span>
-                        </motion.h1>
+                                Download CV
+                            </a>
+                            <a 
+                                href="#projects" 
+                                className="px-6 py-1.5 md:py-2 bg-[#EFEFEF] hover:bg-[#DBDBDB] text-black text-sm font-semibold rounded-lg transition-colors border border-transparent"
+                            >
+                                Explore Work
+                            </a>
+                        </motion.div>
                     </div>
                 </div>
 
-                {/* 2. DESCRIPTION */}
+                {/* MIDDLE ROW: Description Box */}
                 <motion.div
-                    custom={3}
-                    initial="hidden"
-                    animate="visible"
-                    variants={fadeInUp}
-                    className="mb-8 pl-1"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.4, duration: 0.8, ease: "easeOut" }}
+                    className="w-full relative mt-4 md:mt-6"
                 >
-                    <div className="text-slate-600 text-base md:text-xl leading-relaxed max-w-2xl font-light space-y-4">
-                        <p>
-                            Undergraduate <span className="font-bold text-slate-900">Information Technology</span> student at <span className="font-bold text-slate-900">Telkom University</span>
-                            <span className="relative inline-block mx-2 font-bold text-slate-900 z-10 whitespace-nowrap px-1">
-                                <motion.span
-                                    initial={{ width: 0 }}
-                                    animate={{ width: "100%" }}
-                                    transition={{ delay: 4, duration: 0.6, ease: "easeOut" }}
-                                    className="absolute bottom-1 left-0 h-3 md:h-3.5 bg-yellow-300/80 -z-10 skew-x-[-10deg]"
-                                />
-                                (GPA 3.94 / 4.00)
-                            </span>.
-                        </p>
-
-                        <p className="italic text-slate-500 border-l-4 border-blue-500 pl-4 py-1 text-sm md:text-base">
-                            "Aspiring to become a key proficient IT resource in Indonesia, delivering secure & intelligent digital solutions."
-                        </p>
-                    </div>
+                    <fieldset className="bg-white border border-[#DBDBDB] px-5 pb-6 md:px-8 md:pb-8 pt-3 rounded-2xl relative z-10 text-[0.95rem] md:text-base text-[var(--text)] leading-relaxed md:leading-relaxed text-left shadow-sm">
+                        
+                        {/* Title: About Me (Legend Style intersecting top border natively) */}
+                        <legend className="ml-0 px-1">
+                            <h2 className="text-xl md:text-2xl font-bold text-[var(--text)] flex items-baseline tracking-wide">
+                                <span className={`${greatVibes.className} text-5xl md:text-6xl mr-0.5 leading-none translate-y-1 md:translate-y-1.5 bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 to-blue-600 px-2 py-4 -mx-2 -my-4`}>A</span>
+                                bout &nbsp;
+                                <span className={`${greatVibes.className} text-5xl md:text-6xl mr-0.5 leading-none translate-y-1 md:translate-y-1.5 bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 to-blue-600 px-2 py-4 -mx-2 -my-4`}>M</span>
+                                e
+                            </h2>
+                        </legend>
+                        
+                        <div className="mt-2">
+                            {profileData?.about_me || "Undergraduate student @ Telkom University. Specializing in AI Engineering, Cyber Security, IoT, and Fullstack Development. Aspiring to become a key proficient IT resource in Indonesia, delivering secure & intelligent digital solutions."}
+                        </div>
+                    </fieldset>
                 </motion.div>
 
-                {/* 3. ROLE */}
+                {/* BOTTOM ROW: Stats */}
                 <motion.div
-                    custom={4}
-                    initial="hidden"
-                    animate="visible"
-                    variants={fadeInUp}
-                    className="mb-8 md:mb-10 flex items-center gap-3 pl-1"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.6, duration: 0.8, ease: "easeOut" }}
+                    className="w-full grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mt-4 md:mt-5"
                 >
-                    <span className="text-sm md:text-base font-black text-slate-900 uppercase tracking-widest min-w-[60px]">I AM A</span>
-
-                    <div className="h-10 relative flex-1 max-w-sm">
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={roleIndex}
-                                initial={{ y: 20, opacity: 0, filter: 'blur(2px)' }}
-                                animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
-                                exit={{ y: -20, opacity: 0, filter: 'blur(2px)' }}
-                                transition={{ duration: 0.5, ease: "circOut" }}
-                                className="absolute top-0 left-0"
-                            >
-                                <span className="px-5 py-2.5 bg-slate-900 text-white text-sm md:text-base font-bold rounded-full shadow-xl flex items-center gap-3 whitespace-nowrap border border-slate-700">
-                                    <CurrentIcon className="w-4 h-4 text-blue-400" />
-                                    {ROLES[roleIndex].label}
-                                </span>
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
-                </motion.div>
-
-                {/* 4. BUTTONS - COMPACT GRID HYBRID */}
-                <motion.div
-                    custom={5}
-                    initial="hidden"
-                    animate="visible"
-                    variants={fadeInUp}
-                    className="w-full pl-0 md:pl-1 flex flex-wrap items-center gap-3"
-                >
-                    {/* BUTTONS UTAMA: Besar tapi Compact (Grid di mobile, Row di Desktop) */}
-                    <div className="flex flex-1 gap-3 min-w-[280px]">
-                        <a href="#projects" className="flex-1 md:flex-none px-6 py-4 bg-black text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex justify-center items-center gap-2 text-sm md:text-base whitespace-nowrap shadow-lg">
-                            Explore Me <ChevronRight className="w-4 h-4" />
-                        </a>
-
-                        <a href={PROFILE.cvLink} className="flex-1 md:flex-none px-6 py-4 bg-white text-slate-800 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all flex justify-center items-center gap-2 text-sm md:text-base whitespace-nowrap">
-                            <Download className="w-4 h-4" /> CV
-                        </a>
+                    {/* Stat 1: GPA */}
+                    <div className="bg-white border border-[#DBDBDB] p-4 md:p-5 rounded-xl flex flex-col items-center justify-center text-center hover:border-blue-300 hover:shadow-md transition-all">
+                        <span className="text-xl md:text-2xl font-bold text-[var(--text)] mb-1">
+                            <AnimatedCounter value={profileData?.gpa || 3.94} decimals={2} delay={1.8} duration={2.5} />
+                        </span>
+                        <span className="text-[0.65rem] md:text-xs text-[var(--text-muted)] font-medium">GPA</span>
                     </div>
 
-                    <div className="hidden md:block w-px h-10 bg-slate-200 mx-2"></div>
+                    {/* Stat 2: Projects */}
+                    <div className="bg-white border border-[#DBDBDB] p-4 md:p-5 rounded-xl flex flex-col items-center justify-center text-center hover:border-blue-300 hover:shadow-md transition-all">
+                        <span className="text-xl md:text-2xl font-bold text-[var(--text)] flex items-center mb-1">
+                            <AnimatedCounter value={projectsCount || 30} delay={1.8} duration={2.5} /><span className="text-blue-500 ml-0.5">+</span>
+                        </span>
+                        <span className="text-[0.65rem] md:text-xs text-[var(--text-muted)] font-medium">Projects</span>
+                    </div>
 
-                    {/* SOSMED: Auto Expand di mobile agar mudah ditekan */}
-                    <div className="flex gap-3 md:ml-0 md:w-auto w-full md:justify-start justify-center">
-                        <SocialButton href={PROFILE.socials.linkedin} icon={<Linkedin className="w-5 h-5" />} label="LinkedIn" />
-                        <SocialButton href={PROFILE.socials.github} icon={<Github className="w-5 h-5" />} label="Github" />
+                    {/* Stat 3: Years */}
+                    <div className="bg-white border border-[#DBDBDB] p-4 md:p-5 rounded-xl flex flex-col items-center justify-center text-center hover:border-blue-300 hover:shadow-md transition-all">
+                        <span className="text-xl md:text-2xl font-bold text-[var(--text)] flex items-center mb-1">
+                            <AnimatedCounter value={profileData?.years_experience || 2} delay={1.8} duration={2.5} /><span className="text-blue-500 ml-0.5">+</span>
+                        </span>
+                        <span className="text-[0.65rem] md:text-xs text-[var(--text-muted)] font-medium">Years</span>
+                    </div>
+
+                    {/* Stat 4: Experiences */}
+                    <div className="bg-white border border-[#DBDBDB] p-4 md:p-5 rounded-xl flex flex-col items-center justify-center text-center hover:border-blue-300 hover:shadow-md transition-all">
+                        <span className="text-xl md:text-2xl font-bold text-[var(--text)] flex items-center mb-1 h-[28px] md:min-h-[32px]">
+                            <AnimatedCounter value={experiencesCount || 19} delay={1.8} duration={2.5} /><span className="text-blue-500 ml-0.5">+</span>
+                        </span>
+                        <span className="text-[0.65rem] md:text-xs text-[var(--text-muted)] font-medium">Experiences</span>
                     </div>
                 </motion.div>
 
             </div>
         </section>
     );
-}
-
-function SocialButton({ href, icon, label }: { href: string, icon: React.ReactNode, label?: string }) {
-    return (
-        <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 md:flex-none md:w-14 h-14 md:h-12 flex items-center justify-center rounded-xl text-slate-500 hover:text-black hover:bg-slate-100 transition-all border border-slate-200 bg-white gap-2"
-        >
-            {icon}
-            {/* Label hanya muncul di mobile jika space sangat lega, tapi disini kita icon only tapi kotak besar */}
-            <span className="md:hidden font-semibold text-sm text-slate-700">{label}</span>
-        </a>
-    )
 }

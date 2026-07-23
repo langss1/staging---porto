@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 
 export default function Dock() {
     const [isVisible, setIsVisible] = useState(false);
+    const [profileData, setProfileData] = useState<any>(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -38,6 +39,17 @@ export default function Dock() {
         // Trigger once on mount
         handleScroll();
 
+        const fetchProfile = async () => {
+            try {
+                const { supabase } = await import('@/lib/supabase');
+                const { data } = await supabase.from('profile').select('linkedin_url, github_url, instagram_url, email, cv_link').single();
+                if (data) setProfileData(data);
+            } catch (e) {
+                // Ignore error if columns don't exist yet
+            }
+        };
+        fetchProfile();
+
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
@@ -57,15 +69,15 @@ export default function Dock() {
 
                         {/* Main Dock (Right) */}
                         <div className="pointer-events-auto flex items-center gap-2 p-2 bg-white/80 backdrop-blur-md border border-white/50 rounded-2xl shadow-2xl">
-                            <SocialIcon href={PROFILE.socials.linkedin} icon={<Linkedin size={20} />} label="LinkedIn" />
-                            <SocialIcon href={PROFILE.socials.github} icon={<Github size={20} />} label="Github" />
-                            <SocialIcon href="https://www.instagram.com/gilangwasis/" icon={<Instagram size={20} />} label="Instagram" />
-                            <SocialIcon href={PROFILE.socials.email} icon={<Mail size={20} />} label="Email" />
+                            <SocialIcon href={profileData?.linkedin_url || PROFILE.socials.linkedin} icon={<Linkedin size={20} />} label="LinkedIn" />
+                            <SocialIcon href={profileData?.github_url || PROFILE.socials.github} icon={<Github size={20} />} label="Github" />
+                            <SocialIcon href={profileData?.instagram_url || "https://www.instagram.com/gilangwasis/"} icon={<Instagram size={20} />} label="Instagram" />
+                            <SocialIcon href={profileData?.email || PROFILE.socials.email} icon={<Mail size={20} />} label="Email" />
 
                             <div className="w-px h-6 bg-slate-200 mx-1" />
 
                             <a
-                                href={PROFILE.cvLink}
+                                href={profileData?.cv_link || PROFILE.cvLink}
                                 target="_blank"
                                 className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-black transition-colors"
                             >

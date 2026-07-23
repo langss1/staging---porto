@@ -1,248 +1,423 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
-import { ORBIT_CATEGORIES, PROJECTS } from "@/data/portfolio";
-import { ArrowUpRight, Github, Code2, Globe } from "lucide-react";
-import ScrollScale from "./ScrollScale";
-import ImageWithLoader from "./ImageWithLoader";
+import { motion, AnimatePresence } from "framer-motion";
+import { Great_Vibes } from "next/font/google";
+import { 
+  Cpu, 
+  Shield, 
+  Code, 
+  Database, 
+  Globe, 
+  Wifi, 
+  Smartphone, 
+  Sparkles,
+  ArrowDownCircle
+} from "lucide-react";
 
-// Animasi Gradient
-const gradientStyle = {
-    backgroundImage: 'linear-gradient(to right, #2563eb, #60a5fa, #2563eb)',
-    backgroundSize: "200% auto",
-    animation: "shine 4s linear infinite"
+const greatVibes = Great_Vibes({ weight: "400", subsets: ["latin"] });
+
+// Data Structure
+const SKILL_DATA = {
+  iot: { 
+    id: 'iot',
+    label: "IoT Engineering", 
+    mobileLabel: "IoT",
+    items: ["ESP32", "MQTT", "C++", "Sensors", "MicroPython"],
+    evidence: "Extensive experience designing autonomous monitoring systems and building end-to-end IoT pipelines from edge devices to cloud dashboards.",
+    projectsText: "See IoT Projects",
+    icon: Cpu
+  },
+  cyber: { 
+    id: 'cyber',
+    label: "Cyber Security", 
+    mobileLabel: "Cyber",
+    items: ["OWASP Top 10", "VAPT", "MITRE ATT&CK", "ISO 27002"],
+    evidence: "Conducting vulnerability assessments and penetration testing. Familiar with industry standards to secure web applications and network infrastructures.",
+    projectsText: "See VAPT & Security Audit projects",
+    icon: Shield
+  },
+  ai: { 
+    id: 'ai',
+    label: "AI Engineering", 
+    mobileLabel: "AI",
+    items: ["RAG", "LLM Agents", "ChromaDB", "Prompt Engineering"],
+    evidence: "Developing intelligent agents and Retrieval-Augmented Generation systems using state-of-the-art LLMs, integrated with vector databases for knowledge retrieval.",
+    projectsText: "See AI Assistants & NLP projects",
+    icon: Sparkles
+  },
+  software: { 
+    id: 'software',
+    label: "Fullstack", 
+    mobileLabel: "Software",
+    items: ["React", "Python", "SQL", "Flutter", "Next.js"],
+    evidence: "Building scalable web and mobile applications from end-to-end. Experienced in modern frontend frameworks and robust backend architectures.",
+    projectsText: "See Web & Mobile App projects",
+    icon: Code
+  }
 };
 
-// Add "All" option to tabs
-const ALL_CATEGORY = { id: "ALL", label: "All Works", icon: Code2 };
-const FILTER_TABS = [ALL_CATEGORY, ...ORBIT_CATEGORIES];
+const tabs = [SKILL_DATA.iot, SKILL_DATA.cyber, SKILL_DATA.ai, SKILL_DATA.software];
 
-export default function MySkills() {
-    const [activeTab, setActiveTab] = useState("ALL");
-    const [hoveredProject, setHoveredProject] = useState<number | null>(null);
+// Dynamic Logo Component
+function DynamicLogo({ activeTab, tabsData }: { activeTab: string, tabsData: Record<string, any> }) {
+  // Map string icon names from DB to Lucide components if needed, or fallback
+  const iconsMap: Record<string, any> = { Cpu, Shield, Sparkles, Code };
+  
+  const iconName = tabsData[activeTab]?.icon;
+  const ActiveIcon = typeof iconName === 'string' ? (iconsMap[iconName] || Cpu) : (iconName || Cpu);
 
-    // Filter logic
-    const filteredProjects = activeTab === "ALL"
-        ? PROJECTS
-        : PROJECTS.filter(p => p.categories.includes(activeTab));
-
-    return (
-        <section id="projects" className="py-24 bg-slate-50 relative min-h-screen flex flex-col overflow-hidden">
-
-            {/* Background Decorations */}
-            <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-white to-slate-50 pointer-events-none" />
-            <div className="absolute top-20 right-0 w-[600px] h-[600px] bg-blue-100/40 rounded-full blur-[100px] -z-10" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-100/40 rounded-full blur-[100px] -z-10" />
-
-            <div className="max-w-7xl mx-auto px-6 w-full relative z-10">
-
-                {/* 1. Header & Tabs */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-                    <div>
-                        <ScrollScale className="text-left">
-                            <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
-                                Projects &<br />
-                                <span style={{
-                                    backgroundImage: 'linear-gradient(to right, #2563eb, #60a5fa, #2563eb)',
-                                    backgroundSize: "200% auto",
-                                    animation: "shine 4s linear infinite"
-                                }} className="bg-clip-text text-transparent">Skills</span>
-                            </h2>
-                            <p className="text-slate-500 max-w-md text-sm md:text-base leading-relaxed">
-                                Here are some projects that I have made in IoT, AI, Web development, Application, Click on any project content to explore the code.
-                            </p>
-                        </ScrollScale>
-                    </div>
-
-                    {/* Filter Tabs */}
-                    <div className="flex flex-wrap gap-2">
-                        {FILTER_TABS.map((tab) => {
-                            const isActive = activeTab === tab.id;
-                            const Icon = tab.icon;
-                            return (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`
-                                        flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-300 border
-                                        ${isActive
-                                            ? "bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/20 scale-105"
-                                            : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-900"
-                                        }
-                                    `}
-                                >
-                                    <Icon className="w-4 h-4" />
-                                    {tab.label}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* 2. Projects Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <AnimatePresence mode="popLayout">
-                        {filteredProjects.map((project, idx) => (
-                            <ProjectCard
-                                key={project.id}
-                                project={project}
-                                idx={idx}
-                                setHoveredProject={setHoveredProject}
-                            />
-                        ))}
-                    </AnimatePresence>
-                </div>
-
-                {/* Empty State */}
-                {filteredProjects.length === 0 && (
-                    <div className="text-center py-20">
-                        <p className="text-slate-400">No projects found in this category.</p>
-                    </div>
-                )}
-
-            </div>
-        </section>
-    );
+  return (
+    <div className="relative group">
+      {/* Background glowing blob */}
+      <div className="absolute inset-0 bg-blue-100 rounded-[2rem] blur-xl transition-colors opacity-60"></div>
+      
+      {/* Logo container */}
+      <div className="relative w-32 h-32 md:w-44 md:h-44 bg-white border border-[#DBDBDB] rounded-[2rem] shadow-sm flex flex-col items-center justify-center transition-transform hover:scale-105">
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={activeTab}
+            initial={{ opacity: 0, scale: 0.2, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 1.8, filter: "blur(10px)" }}
+            transition={{ duration: 0.5, type: "spring" }}
+            className="absolute"
+          >
+            <ActiveIcon className="w-12 h-12 md:w-16 md:h-16 text-blue-600" strokeWidth={2.5} />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
 }
 
-function ProjectCard({ project, idx, setHoveredProject }: { project: any, idx: number, setHoveredProject: any }) {
-    const cardRef = useRef(null);
-    const isInView = useInView(cardRef, { amount: 0.6, margin: "0px" });
-    const [isPressed, setIsPressed] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
+function AutoScrollSkills({ items }: { items: string[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [isInteracting, setIsInteracting] = useState(false);
 
-    // Check for mobile
-    useEffect(() => {
-        setIsMobile(window.innerWidth < 768);
-        const handleResize = () => setIsMobile(window.innerWidth < 768);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    const handleInteraction = () => {
+      setIsInteracting(true);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setIsInteracting(false);
+      }, 3000); // 3 seconds delay after user stops scrolling
+    };
 
-    // Mobile Auto-Trigger Logic
-    useEffect(() => {
-        if (!isMobile) return;
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener('scroll', handleInteraction, { passive: true });
+      el.addEventListener('touchstart', handleInteraction, { passive: true });
+    }
+    return () => {
+      clearTimeout(timeoutId);
+      if (el) {
+        el.removeEventListener('scroll', handleInteraction);
+        el.removeEventListener('touchstart', handleInteraction);
+      }
+    };
+  }, []);
 
-        let timer1: NodeJS.Timeout;
-        let timer2: NodeJS.Timeout;
+  useEffect(() => {
+    let animationId: number;
+    let lastTime = performance.now();
+    
+    const render = (time: number) => {
+      const el = scrollRef.current;
+      const inner = innerRef.current;
 
-        if (isInView) {
-            // Wait 3.5s before triggering "pressed" state
-            timer1 = setTimeout(() => {
-                setIsPressed(true);
-
-                // Keep "pressed" for 1.5s then revert
-                timer2 = setTimeout(() => {
-                    setIsPressed(false);
-                }, 1500);
-            }, 3500);
-        } else {
-            setIsPressed(false);
+      if (el && inner && !isInteracting) {
+        if (window.innerWidth < 768) {
+          const delta = time - lastTime;
+          el.scrollLeft += 0.04 * delta; // speed
+          
+          // Loop seamlessly
+          if (el.scrollLeft >= inner.clientWidth + 8) {
+            el.scrollLeft -= (inner.clientWidth + 8);
+          }
         }
+      }
+      lastTime = time;
+      animationId = requestAnimationFrame(render);
+    };
+    
+    animationId = requestAnimationFrame(render);
+    return () => cancelAnimationFrame(animationId);
+  }, [isInteracting]);
 
-        return () => {
-            clearTimeout(timer1);
-            clearTimeout(timer2);
-        };
-    }, [isInView, isMobile]);
+  return (
+    <div 
+      ref={scrollRef}
+      className="flex md:block overflow-x-auto md:overflow-visible [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full"
+    >
+      <div ref={innerRef} className="flex md:flex-wrap gap-2 shrink-0 w-max md:w-full">
+        {items.map(item => (
+           <span key={`orig-${item}`} className="px-3 py-1.5 bg-blue-50/50 text-blue-700 rounded-lg text-sm font-semibold border border-blue-100/50 whitespace-nowrap shrink-0">
+               {item}
+           </span>
+        ))}
+      </div>
+      <div className="flex md:hidden gap-2 shrink-0 ml-2">
+        {items.map(item => (
+           <span key={`dup-${item}`} className="px-3 py-1.5 bg-blue-50/50 text-blue-700 rounded-lg text-sm font-semibold border border-blue-100/50 whitespace-nowrap shrink-0">
+               {item}
+           </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-    return (
-        <motion.div
-            ref={cardRef}
-            layout
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6, delay: idx * 0.1, ease: "circOut" }}
-            onMouseEnter={() => setHoveredProject(project.id)}
-            onMouseLeave={() => setHoveredProject(null)}
-            onClick={() => project.githubUrl && window.open(project.githubUrl, '_blank')}
-            animate={isPressed ? { scale: 0.95 } : { scale: 1 }}
-            className={`group relative bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 flex flex-col h-full overflow-hidden cursor-pointer ${isPressed ? 'shadow-inner' : ''}`}
-        >
-            {/* Project Image */}
-            <div className="aspect-video w-full bg-slate-50 relative overflow-hidden border-b border-slate-50">
-                <ImageWithLoader
-                    src={project.image || "/Portfolio/placeholder-project.svg"}
-                    alt={project.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
+export default function MySkills() {
+  const [activeTab, setActiveTab] = useState('iot');
+  const [dynamicSkills, setDynamicSkills] = useState<Record<string, any>>(SKILL_DATA);
+  const [tabsList, setTabsList] = useState<any[]>(tabs);
+  const [projects, setProjects] = useState<any[]>([]);
 
-                {/* Overlay Actions (Visible on Hover/Mobile Trigger) */}
-                <div className={`absolute inset-0 bg-black/40 transition-opacity duration-300 flex items-center justify-center gap-4 ${isPressed ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                    {project.githubUrl && (
-                        <div
-                            onClick={(e) => { e.stopPropagation(); window.open(project.githubUrl || "", '_blank'); }}
-                            className="w-14 h-14 bg-white text-slate-900 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform cursor-pointer"
-                            title="View Code"
-                        >
-                            <Github className="w-7 h-7" />
-                        </div>
-                    )}
+  useEffect(() => {
+    const fetchData = async () => {
+      const { supabase } = await import('@/lib/supabase');
+      const { data: skillsData } = await supabase.from('m_shape_skills').select('*');
+      
+      if (skillsData && skillsData.length > 0) {
+        const newSkillsData: Record<string, any> = {};
+        skillsData.forEach(item => {
+          newSkillsData[item.id] = {
+            id: item.id,
+            label: item.label,
+            mobileLabel: item.mobile_label,
+            items: item.items,
+            evidence: item.evidence,
+            projectsText: item.projects_text,
+            icon: item.icon
+          };
+        });
+        setDynamicSkills(newSkillsData);
+        const ordered = ['iot', 'cyber', 'ai', 'software'].map(id => newSkillsData[id]).filter(Boolean);
+        setTabsList(ordered.length > 0 ? ordered : skillsData);
+        if (ordered.length > 0) setActiveTab(ordered[0].id);
+      }
 
-                    {/* Web Button (Only for Web projects) */}
-                    {project.categories.includes("Web") && project.demoUrl && (
-                        <div
-                            onClick={(e) => { e.stopPropagation(); window.open(project.demoUrl || "", '_blank'); }}
-                            className="w-14 h-14 bg-white text-slate-900 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform cursor-pointer"
-                            title="Visit Website"
-                        >
-                            <Globe className="w-7 h-7" />
-                        </div>
-                    )}
-                </div>
-            </div>
+      const { data: projectsData, error: projError } = await supabase.from('projects').select('*').order('year', { ascending: false });
+      if (projectsData) {
+        setProjects(projectsData);
+      } else if (projError) {
+        console.error("Error fetching projects for MySkills:", projError);
+      }
+    };
+    fetchData();
+  }, []);
 
-            <div className="p-6 flex flex-col flex-1">
-                {/* Category Badge */}
-                <div className="flex justify-between items-start mb-4">
-                    <div className="flex gap-2 flex-wrap">
-                        {project.categories.map((cat: string) => (
-                            <span key={cat} className={`
-                                bg-slate-50 border border-slate-200 text-slate-500
-                                px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider
-                            `}>
-                                {ORBIT_CATEGORIES.find(c => c.id === cat)?.label || cat}
-                            </span>
-                        ))}
-                    </div>
-                </div>
+  const activeData = dynamicSkills[activeTab] || SKILL_DATA.iot;
 
-                {/* Title & Desc */}
-                <div className="mb-6 flex-1">
-                    {/* Award Badge (Moved Here) */}
-                    {project.award && (
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-md text-[10px] font-bold uppercase tracking-wider mb-3">
-                            <span className="text-amber-500">🏆</span> {project.award}
-                        </div>
-                    )}
+  const tabToKategori: Record<string, string> = {
+    'iot': 'IoT',
+    'cyber': 'Cyber',
+    'ai': 'AI',
+    'software': 'Fullstack'
+  };
+  const currentKategori = tabToKategori[activeTab] || 'Fullstack';
+  
+  const relatedProjects = projects
+    .filter(p => {
+       if (activeData.projectsText && activeData.projectsText.trim() !== '') {
+          const featuredTitles = activeData.projectsText.split(',').map((t: string) => t.trim().toLowerCase()).filter(Boolean);
+          if (featuredTitles.length > 0) {
+            const projectTitle = (p.nama || p.title || '').toLowerCase();
+            return featuredTitles.includes(projectTitle);
+          }
+       }
+       const cats = p.categories || [];
+       return cats.includes(currentKategori) || (cats[0] === currentKategori);
+    })
+    .slice(0, 3);
 
-                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
-                        {project.title}
-                    </h3>
-                    <p className="text-slate-500 text-sm leading-relaxed line-clamp-3">
-                        {project.description}
-                    </p>
-                </div>
+  return (
+    <section id="skills" className="w-full min-h-screen py-12 md:py-24 px-4 md:px-12 lg:px-24 bg-[var(--bg)] relative overflow-hidden flex flex-col justify-center">
+      
+      {/* Antigravity Dot Pattern Background */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, #000 1.5px, transparent 1.5px)", backgroundSize: "32px 32px" }}></div>
+      
+      <motion.div 
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="max-w-5xl w-full mx-auto flex flex-col gap-8 md:gap-10 relative z-10"
+      >
+          
+          {/* Top Section */}
+          <div className="flex flex-row md:flex-row justify-between gap-4 md:gap-8 items-center md:items-start w-full">
+             
+             {/* Left: Title & Text */}
+             <div className="flex flex-col gap-4 w-full md:w-3/4 text-left md:text-left">
+                  <div className="flex items-center justify-start md:justify-start">
+                      <div className="flex items-center">
+                          <motion.span 
+                            variants={{
+                               hidden: { opacity: 0, clipPath: "inset(0 100% 0 0)" },
+                               visible: { opacity: 1, clipPath: "inset(0 0% 0 0)", transition: { duration: 1.0, ease: "easeInOut" } }
+                            }}
+                            className={`${greatVibes.className} text-[80px] md:text-[140px] font-bold -mr-1 md:-mr-2 leading-none translate-y-1 md:translate-y-2 bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 to-blue-600 px-6 py-4 -mx-6 md:px-10 md:py-6 md:-mx-10 -my-6 z-10 relative`}
+                          >M</motion.span>
 
-                {/* Tech Stack Divider */}
-                <div className="w-full h-px bg-slate-100 mb-4" />
-
-                {/* Tech Stack Tags */}
-                <div>
-                    <div className="flex flex-wrap gap-2">
-                        {project.techStack.slice(0, 4).map((tech: string) => (
-                            <span
-                                key={tech}
-                                className="px-2 py-1 bg-slate-50 text-slate-600 rounded-md text-[10px] font-bold border border-slate-100 flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-default"
+                          {/* Shape Skills + Mobile Logo side by side */}
+                          <div className="flex items-center gap-2">
+                            <motion.h2 
+                              variants={{
+                                 hidden: { opacity: 1 },
+                                 visible: { opacity: 1 }
+                              }}
+                              className="flex flex-col items-start text-3xl md:text-6xl font-bold display-text text-[var(--text)] tracking-tight leading-[0.9] md:leading-[0.9] z-0"
                             >
-                                {tech}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            </div>
+                                <span>
+                                  {"Shape".split("").map((char, i) => (
+                                     <motion.span key={i} variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.05, delay: 0.9 + (i * 0.05) } } }}>{char}</motion.span>
+                                  ))}
+                                </span>
+                                <span>
+                                  {"Skills".split("").map((char, i) => (
+                                     <motion.span key={i} variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.05, delay: 1.15 + (i * 0.05) } } }}>{char}</motion.span>
+                                  ))}
+                                </span>
+                            </motion.h2>
 
-        </motion.div>
-    );
+                            <motion.div
+                              variants={{
+                                 hidden: { opacity: 0, scale: 0.8 },
+                                 visible: { opacity: 1, scale: 1, transition: { duration: 0.6, delay: 1.6, ease: "easeOut" } }
+                              }}
+                              className="flex md:hidden shrink-0"
+                            >
+                              <div className="scale-[0.55] origin-center">
+                                <DynamicLogo activeTab={activeTab} tabsData={dynamicSkills} />
+                              </div>
+                            </motion.div>
+                          </div>
+
+                      </div>
+                  </div>
+                  
+                  <motion.div 
+                    variants={{
+                       hidden: { opacity: 0, y: 20 },
+                       visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 1.5, ease: "easeOut" } }
+                    }}
+                    className="mt-2 text-left"
+                 >
+                    <p className="text-[var(--text-muted)] text-base md:text-lg leading-relaxed">
+                        Three years of active research and development on campus, driven by intensive coursework,<br className="hidden md:block" /> research lab studies, and hands-on industry experience.
+                    </p>
+                 </motion.div>
+             </div>
+             
+             {/* Right: Dynamic Logo — Desktop only */}
+             <motion.div 
+                variants={{
+                   hidden: { opacity: 0, scale: 0.8 },
+                   visible: { opacity: 1, scale: 1, transition: { duration: 0.6, delay: 1.6, ease: "easeOut" } }
+                }}
+                className="hidden md:flex justify-end w-1/4 shrink-0"
+             >
+                  <DynamicLogo activeTab={activeTab} tabsData={dynamicSkills} />
+             </motion.div>
+          </div>
+          
+          {/* Bottom Section (Copybook layout) */}
+          <motion.div 
+             variants={{
+                hidden: { opacity: 0, y: 40 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.8, delay: 1.8, ease: "easeOut" } }
+             }}
+             className="flex flex-col w-full"
+          >
+             {/* Tabs Row */}
+             <div className="flex overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] gap-1 md:gap-2 px-2 md:px-8 relative z-10 translate-y-[1px]">
+                 {tabsList.map(tab => (
+                     <button 
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`px-5 py-3 md:px-8 md:py-4 rounded-t-xl font-bold transition-all border border-[#DBDBDB] whitespace-nowrap text-sm md:text-base ${
+                            activeTab === tab.id 
+                            ? 'bg-white text-blue-600 border-b-white' 
+                            : 'bg-gray-50 text-gray-500 hover:bg-gray-100 border-b-[#DBDBDB] opacity-80 hover:opacity-100'
+                        }`}
+                     >
+                        <span className="hidden md:inline">{tab.label}</span>
+                        <span className="inline md:hidden">{tab.mobileLabel || tab.label}</span>
+                     </button>
+                 ))}
+             </div>
+             
+             {/* Copybook Body */}
+             <div className="bg-white border border-[#DBDBDB] rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-sm relative z-0">
+                  
+                  <AnimatePresence mode="wait">
+                    <motion.div 
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16"
+                    >
+                        
+                        {/* Left Column: Skill + Evidence */}
+                        <div className="flex flex-col gap-6 md:border-r border-[#DBDBDB] md:pr-10">
+                            <h3 className="text-xl md:text-2xl font-bold text-[var(--text)]">Skills & Evidence</h3>
+                            
+                            <AutoScrollSkills items={activeData.items.slice(0, 5)} />
+                            
+                            <p className="text-[var(--text-muted)] leading-relaxed text-sm md:text-base">
+                                {activeData.evidence}
+                            </p>
+                        </div>
+                        
+                        {/* Right Column: Projects Reference */}
+                        <div className="flex flex-col gap-4 justify-center">
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="w-10 h-10 shrink-0 rounded-xl bg-blue-50/80 text-blue-600 flex items-center justify-center border border-blue-100/50">
+                                    <span className="text-xl font-black">+</span>
+                                </div>
+                                <h3 className="text-xl md:text-2xl font-bold text-[var(--text)]">Related Projects</h3>
+                            </div>
+                            
+                            <div className="flex flex-col gap-3">
+                                {relatedProjects.length > 0 ? relatedProjects.map(proj => (
+                                    <a key={proj.id} href="#projects" onClick={(e) => {
+                                        e.preventDefault();
+                                        window.dispatchEvent(new CustomEvent('setProjectFilter', { detail: currentKategori }));
+                                        document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
+                                    }} className="group flex items-center justify-between p-3 rounded-xl border border-[#DBDBDB] hover:border-blue-300 hover:shadow-md transition-all bg-gray-50/50">
+                                        <div className="flex flex-col pr-4">
+                                            <span className="font-bold text-[var(--text)] text-sm group-hover:text-blue-600 transition-colors line-clamp-1">{proj.nama || proj.title}</span>
+                                            <span className="text-xs text-[var(--text-muted)]">{proj.year || proj.tahun}</span>
+                                        </div>
+                                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-[#DBDBDB] group-hover:border-blue-200 shadow-sm shrink-0 transition-all group-hover:bg-blue-50">
+                                            <ArrowDownCircle className="w-4 h-4 text-blue-500 -rotate-90 group-hover:rotate-0 transition-transform" />
+                                        </div>
+                                    </a>
+                                )) : (
+                                    <div className="p-4 border border-dashed border-[#DBDBDB] rounded-xl bg-gray-50/50 flex flex-col items-center justify-center text-center">
+                                        <p className="text-sm text-[var(--text-muted)] italic mb-1">No featured projects yet.</p>
+                                        <p className="text-xs text-gray-400">Check the section below for more.</p>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <a href="#projects" onClick={(e) => {
+                                e.preventDefault();
+                                window.dispatchEvent(new CustomEvent('setProjectFilter', { detail: currentKategori }));
+                                document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
+                            }} className="mt-2 text-sm inline-flex items-center justify-center gap-2 text-blue-600 font-bold hover:text-blue-700 transition-colors w-full md:w-fit px-4 py-2.5 rounded-lg bg-blue-50/50 border border-blue-100 hover:bg-blue-100 cursor-pointer">
+                                View All {currentKategori} Projects
+                            </a>
+                        </div>
+                    </motion.div>
+                  </AnimatePresence>
+              </div>
+          </motion.div>
+      </motion.div>
+    </section>
+  );
 }
