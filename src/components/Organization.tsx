@@ -60,7 +60,7 @@ export default function Organization() {
           name: item.org,
           role: item.role,
           description: item.responsibilities?.join(', ') || '',
-          image: item.image ? (item.image.match(/^\d{13}-/) ? `/organizations/${item.image}` : `/${item.image}`) : null
+          image: item.image ? (item.image.startsWith('http') || item.image.startsWith('/') ? item.image : (item.image.match(/^\d{13}-/) ? `/organizations/${item.image}` : `/${item.image}`)) : null
         })));
       }
     };

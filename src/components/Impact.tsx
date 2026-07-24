@@ -52,7 +52,7 @@ export default function Impact() {
             role: item.title,
             organisasi: item.organization,
             deskripsi: item.description,
-            foto: item.image ? (item.image.match(/^\d{13}-/) ? `/impacts/${item.image}` : `/${item.image}`) : "/org/desa-digital.jpg",
+            foto: item.image ? (item.image.startsWith('http') || item.image.startsWith('/') ? item.image : (item.image.match(/^\d{13}-/) ? `/impacts/${item.image}` : `/${item.image}`)) : "/org/desa-digital.jpg",
             instanceId: `id-${i}`
           }))
         );

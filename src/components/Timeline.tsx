@@ -111,7 +111,7 @@ export default function Timeline() {
       if (data && data.length > 0) {
         const mapped = data.map(item => ({
            ...item,
-           image: item.image ? (item.image.match(/^\d{13}-/) ? `/work_experiences/${item.image}` : `/${item.image}`) : null,
+           image: item.image ? (item.image.startsWith('http') || item.image.startsWith('/') ? item.image : (item.image.match(/^\d{13}-/) ? `/work_experiences/${item.image}` : `/${item.image}`)) : null,
            tech_stack: item.tech_stack || item.techStack || []
         }));
         setDbExperiences(mapped);

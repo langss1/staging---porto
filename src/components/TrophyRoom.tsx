@@ -83,7 +83,7 @@ export default function TrophyRoom() {
           juara_tingkat: item.event,
           penyelenggara: item.icon_type,
           evidence: item.icon_type,
-          image: item.image ? (item.image.match(/^\d{13}-/) ? `/honors/${item.image}` : `/${item.image}`) : null,
+          image: item.image ? (item.image.startsWith('http') || item.image.startsWith('/') ? item.image : (item.image.match(/^\d{13}-/) ? `/honors/${item.image}` : `/${item.image}`)) : null,
           year: item.year
         }));
         
