@@ -458,7 +458,7 @@ export default function MySkills() {
                         </div>
                         
                         {/* Right Column: Projects Reference */}
-                        <div className="flex flex-col gap-4 justify-center">
+                        <div className="flex flex-col gap-4 justify-start">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="w-10 h-10 shrink-0 rounded-xl bg-blue-50/80 text-blue-600 flex items-center justify-center border border-blue-100/50">
                                     <span className="text-xl font-black">+</span>
