@@ -58,44 +58,22 @@ const EXPERIENCES = [
   }
 ];
 
-function ExpandableTechStack({ techStack, limit = 5 }: { techStack: string[], limit?: number }) {
-  const [expanded, setExpanded] = useState(false);
-  const visibleTech = expanded ? techStack : techStack.slice(0, limit);
-  const hiddenCount = techStack.length - limit;
+function ExpandableTechStack({ techStack }: { techStack: string[] }) {
+  if (!techStack || techStack.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-2 w-full md:max-w-[80%]">
+    <div className="flex flex-col gap-2 w-full">
       <span className="text-[10px] font-extrabold text-[#0099ff] uppercase tracking-wider">Tech Stack</span>
-      <motion.div layout className={`flex items-center gap-1.5 overflow-hidden ${expanded ? 'flex-wrap' : 'flex-nowrap'}`}>
-        <AnimatePresence>
-          {visibleTech.map((tech) => (
-            <motion.span 
-              layout
-              key={tech} 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.2 }}
-              className="px-2 py-1 rounded-md border border-[var(--border)] text-[10px] font-bold text-[var(--text-muted)] bg-white shadow-sm whitespace-nowrap shrink-0"
-            >
-              {tech}
-            </motion.span>
-          ))}
-          {!expanded && hiddenCount > 0 && (
-            <motion.button 
-              layout
-              key="expand-btn"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setExpanded(true); }}
-              className="text-[10px] font-bold text-[var(--text-muted)] ml-1 hover:text-[#0099ff] cursor-pointer shrink-0"
-            >
-              +{hiddenCount}
-            </motion.button>
-          )}
-        </AnimatePresence>
-      </motion.div>
+      <div className="flex items-center flex-wrap gap-1.5 w-full">
+        {techStack.map((tech) => (
+          <span 
+            key={tech} 
+            className="px-2.5 py-1 rounded-md border border-[var(--border)] text-[10px] font-bold text-[var(--text-muted)] bg-white shadow-sm whitespace-nowrap shrink-0"
+          >
+            {tech}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -273,7 +251,7 @@ export default function Timeline() {
 
                    {/* Tech Stack Row (Bottom) */}
                    <div className="mt-auto pt-5 border-t border-[var(--border)]">
-                      <ExpandableTechStack techStack={exp.tech_stack || exp.techStack} limit={4} />
+                      <ExpandableTechStack techStack={exp.tech_stack || exp.techStack} />
                    </div>
                 </div>
              </motion.div>
