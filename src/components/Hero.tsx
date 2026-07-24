@@ -103,12 +103,15 @@ export default function Hero() {
                             >
                                 Download CV
                             </a>
-                            <a 
-                                href="#projects" 
-                                className="px-6 py-1.5 md:py-2 bg-[#EFEFEF] hover:bg-[#DBDBDB] text-black text-sm font-semibold rounded-lg transition-colors border border-transparent"
+                            <button 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  document.getElementById('skills')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                className="px-6 py-1.5 md:py-2 bg-[#EFEFEF] hover:bg-[#DBDBDB] text-black text-sm font-semibold rounded-lg transition-colors border border-transparent cursor-pointer"
                             >
                                 Explore Work
-                            </a>
+                            </button>
                         </motion.div>
                     </div>
                 </div>
