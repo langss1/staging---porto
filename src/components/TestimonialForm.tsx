@@ -14,6 +14,8 @@ export default function TestimonialForm({ isOpen, onClose }: TestimonialFormProp
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
+  const [uploading, setUploading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     role: "",
@@ -40,8 +42,7 @@ export default function TestimonialForm({ isOpen, onClose }: TestimonialFormProp
             role: formData.role,
             message: formData.message,
             avatar_url: formData.avatar_url || null,
-            // is_approved defaults to false in DB, but we explicitly set it if possible.
-            is_approved: false
+            is_approved: true
           }
         ]);
 
@@ -139,15 +140,56 @@ export default function TestimonialForm({ isOpen, onClose }: TestimonialFormProp
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-slate-700">Avatar URL (Optional)</label>
-                  <input 
-                    type="url" 
-                    maxLength={500}
-                    placeholder="https://example.com/avatar.png"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
-                    value={formData.avatar_url}
-                    onChange={(e) => setFormData({...formData, avatar_url: e.target.value})}
-                  />
+                  <label className="text-sm font-semibold text-slate-700">Avatar Photo / Image (Optional)</label>
+                  <div className="flex flex-col gap-2">
+                    <input 
+                      type="file"
+                      accept="image/*"
+                      disabled={uploading}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploading(true);
+                        try {
+                          const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                          const filename = `testimonials/${Date.now()}-${safeName}`;
+                          const { data, error: uploadErr } = await supabase.storage
+                            .from('portfolio-files')
+                            .upload(filename, file);
+                          if (uploadErr) throw uploadErr;
+                          if (data) {
+                            const { data: publicUrlData } = supabase.storage
+                              .from('portfolio-files')
+                              .getPublicUrl(data.path);
+                            setFormData({...formData, avatar_url: publicUrlData.publicUrl});
+                          }
+                        } catch (err: any) {
+                          console.error("Upload error:", err);
+                        } finally {
+                          setUploading(false);
+                        }
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer outline-none transition-all"
+                    />
+                    {uploading && (
+                      <p className="text-xs text-blue-600 flex items-center gap-1 font-medium">
+                        <Loader2 size={12} className="animate-spin" /> Uploading photo...
+                      </p>
+                    )}
+                    {formData.avatar_url && !uploading && (
+                      <div className="flex items-center gap-2.5 bg-blue-50/50 p-2 rounded-xl border border-blue-100">
+                        <img src={formData.avatar_url} alt="Preview" className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0" />
+                        <span className="text-xs text-emerald-700 font-bold truncate flex-1">Photo attached!</span>
+                        <button 
+                          type="button" 
+                          onClick={() => setFormData({...formData, avatar_url: ""})} 
+                          className="text-xs text-red-500 font-bold hover:underline px-1 shrink-0"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">

@@ -56,37 +56,16 @@ export default function Contact() {
         if (pData) setProfileData(pData);
 
         // Fetch Approved Testimonials
-        const { data: tData } = await supabase.from('testimonials').select('*').eq('is_approved', true).order('created_at', { ascending: false });
+        const { data: tData } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false });
         if (tData && tData.length > 0) {
-          setTestimonials(tData);
+          const approved = tData.filter(item => item.is_approved !== false);
+          setTestimonials(approved.length > 0 ? approved : tData);
         } else {
-          // Fallback dummy testimonials if none approved or table doesn't exist
-          setTestimonials([
-            {
-              id: 'dummy1',
-              name: 'Sarah Anderson',
-              role: 'Product Designer',
-              message: 'Gilang is incredibly adaptive! He jumps into new stacks effortlessly and always brings fresh, collaborative perspectives to our team.',
-              avatar_url: ''
-            },
-            {
-              id: 'dummy2',
-              name: 'Michael Chen',
-              role: 'Senior Developer',
-              message: 'A true problem solver! Working with Gilang was a breeze because of his rapid understanding of complex architectures.',
-              avatar_url: ''
-            }
-          ]);
+          setTestimonials([]);
         }
       } catch (e) {
         console.error("Error fetching data:", e);
-        setTestimonials([{
-          id: 'dummy',
-          name: 'Sarah Anderson',
-          role: 'Product Designer',
-          message: 'Gilang is incredibly adaptive! He jumps into new stacks effortlessly and always brings fresh, collaborative perspectives to our team.',
-          avatar_url: ''
-        }]);
+        setTestimonials([]);
       }
     };
     fetchData();
