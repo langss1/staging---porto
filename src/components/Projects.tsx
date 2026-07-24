@@ -135,6 +135,17 @@ export default function Projects() {
   const [dbProjects, setDbProjects] = useState<any[]>(PROJECTS);
 
   useEffect(() => {
+    if (selectedProject) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [selectedProject]);
+
+  useEffect(() => {
     const fetchProjects = async () => {
       const { supabase } = await import('@/lib/supabase');
       const { data, error } = await supabase.from('projects').select('*').order('year', { ascending: false });
@@ -465,18 +476,22 @@ export default function Projects() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 w-full md:w-[600px] h-full bg-[var(--surface)] shadow-2xl z-[110] border-l border-[var(--border)] overflow-y-auto"
+              className="fixed top-0 right-0 w-full md:w-[600px] h-full bg-white shadow-2xl z-[110] border-l border-slate-200 overflow-y-auto overscroll-contain flex flex-col justify-between"
             >
-              <div className="h-72 bg-slate-100 relative p-6 border-b border-[var(--border)]">
+              <div className="h-72 bg-slate-100 relative p-6 border-b border-slate-200 shrink-0">
                 <button 
                   onClick={closePanel}
-                  className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white hover:bg-slate-100 text-slate-800 shadow-md transition-colors z-20"
+                  className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-md hover:bg-white text-slate-800 shadow-md transition-all z-30 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
-                <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 rounded-3xl flex flex-col items-center justify-center">
-                   <span className="text-slate-500 font-bold uppercase tracking-widest">{selectedProject.kategori} Cover</span>
-                </div>
+                {selectedProject.foto ? (
+                  <ImageWithLoader src={selectedProject.foto} alt={selectedProject.nama} className="absolute inset-0 w-full h-full object-cover z-10" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl flex flex-col items-center justify-center border border-blue-200 z-10">
+                     <span className="text-blue-600 font-bold uppercase tracking-widest text-sm">{selectedProject.kategori} COVER</span>
+                  </div>
+                )}
               </div>
 
               <div className="p-10">
