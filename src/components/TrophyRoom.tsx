@@ -236,19 +236,19 @@ export default function TrophyRoom() {
                           </span>
                        </div>
                      )}
+
+                     {/* Year Badge (Bottom-Right of Image Header) */}
+                     {honor.year && (
+                       <div className="absolute bottom-4 right-4 z-20 px-3.5 py-1.5 bg-white/90 backdrop-blur-md border border-white/50 rounded-xl text-xs font-bold text-slate-700 tracking-wider shadow-sm">
+                         {honor.year}
+                       </div>
+                     )}
                   </div>
 
                   {/* Card Details */}
                   <div className="w-full h-[35%] p-6 md:p-8 bg-[var(--surface)] flex flex-col justify-center">
                      <div className="flex justify-between items-start mb-1 gap-2">
                         <h3 className="text-2xl md:text-3xl font-bold display-text text-[var(--text)] line-clamp-1">{honor.nama}</h3>
-                        <div className="flex flex-col md:flex-row gap-2 shrink-0 items-end md:items-center">
-                          {honor.year && (
-                            <span className="px-3 py-1 bg-indigo-50 border border-indigo-200 rounded-full text-xs font-bold text-indigo-600 uppercase tracking-wider">
-                              {honor.year}
-                            </span>
-                          )}
-                        </div>
                      </div>
                      <div className="text-[#0099ff] font-semibold text-sm mb-2 tracking-wide">
                         {honor.juara_tingkat}

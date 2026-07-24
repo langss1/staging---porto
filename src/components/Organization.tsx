@@ -191,8 +191,7 @@ function TimelineItem({ org, isEven }: { org: any, isEven: boolean }) {
                  {org.year}
                </span>
                {org.status === 'ACTIVE' && (
-                 <span className="px-4 py-1.5 bg-green-500/90 backdrop-blur-md border border-green-400/50 shadow-sm text-white font-bold text-xs rounded-full flex items-center gap-2 uppercase tracking-wide">
-                   <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                 <span className="px-3.5 py-1.5 bg-emerald-500/90 backdrop-blur-md border border-emerald-400/50 shadow-sm text-white font-bold text-xs rounded-full uppercase tracking-wider">
                    ACTIVE
                  </span>
                )}

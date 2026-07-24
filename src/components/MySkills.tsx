@@ -463,7 +463,7 @@ export default function MySkills() {
                                 <div className="w-10 h-10 shrink-0 rounded-xl bg-blue-50/80 text-blue-600 flex items-center justify-center border border-blue-100/50">
                                     <span className="text-xl font-black">+</span>
                                 </div>
-                                <h3 className="text-xl md:text-2xl font-bold text-[var(--text)]">Related Projects</h3>
+                                <h3 className="text-xl md:text-2xl font-bold text-[var(--text)]">Related Skills</h3>
                             </div>
                             
                             <div className="flex flex-col gap-3">

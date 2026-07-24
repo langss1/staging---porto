@@ -67,6 +67,17 @@ export default function Home() {
 
       {!isLoading && (
         <>
+          {/* Click Outside Overlay to Close Menu */}
+          {isMenuOpen && (
+            <div 
+              className="fixed inset-0 z-40 bg-transparent" 
+              onClick={() => {
+                setIsMenuOpen(false);
+                window.dispatchEvent(new CustomEvent('toggleMobileDock'));
+              }} 
+            />
+          )}
+
           {/* Top-Right Navbar & Menu */}
           <div className="fixed top-4 right-4 md:top-6 md:right-8 z-50 flex flex-col gap-2 items-end">
             <button 
@@ -114,10 +125,14 @@ export default function Home() {
                     <button
                       key={link.id}
                       onClick={() => {
-                        document.getElementById(link.id)?.scrollIntoView({ behavior: 'smooth' });
                         setIsMenuOpen(false);
+                        window.dispatchEvent(new CustomEvent('toggleMobileDock'));
+                        const el = document.getElementById(link.id);
+                        if (el) {
+                          el.scrollIntoView({ behavior: 'smooth' });
+                        }
                       }}
-                      className="text-left px-4 py-2.5 text-sm font-semibold text-[var(--text-muted)] hover:text-[#0099ff] hover:bg-blue-50/50 rounded-xl transition-colors"
+                      className="text-left px-4 py-2.5 text-sm font-semibold text-[var(--text-muted)] hover:text-[#0099ff] hover:bg-blue-50/50 rounded-xl transition-colors cursor-pointer w-full"
                     >
                       {link.label}
                     </button>

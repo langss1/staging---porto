@@ -206,13 +206,17 @@ export default function Impact() {
                             <span className="text-blue-400 dark:text-blue-600 font-medium text-sm z-10">Image Placeholder</span>
                           </>
                         )}
+
+                        {/* Role / Category Badge (Bottom-Right of Image Header) */}
+                        {card.role && (
+                          <div className="absolute bottom-4 right-4 z-20 px-3.5 py-1.5 bg-white/90 backdrop-blur-md border border-white/50 rounded-xl text-xs font-bold text-slate-700 tracking-wider shadow-sm">
+                            {card.role}
+                          </div>
+                        )}
                      </div>
                      
                      {/* Card Content Bottom (Text) */}
                      <div className="h-[58%] w-full p-4 sm:p-6 md:p-8 flex flex-col justify-start bg-[var(--surface)]">
-                        <span className="text-[11px] sm:text-xs font-bold px-3 py-1 bg-blue-50 text-blue-600 rounded-full uppercase tracking-wider mb-2 w-max">
-                          {card.role}
-                        </span>
                         <h3 className="text-xl sm:text-2xl md:text-3xl font-black display-text text-[var(--text)] mb-1.5 line-clamp-2">
                           {card.organisasi}
                         </h3>
