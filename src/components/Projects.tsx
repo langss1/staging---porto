@@ -383,11 +383,6 @@ export default function Projects() {
                    {/* Gradient overlay for text readability */}
                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"/>
                    
-                   {/* Year Watermark */}
-                   <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-                      <span className="text-[60px] font-black text-slate-900/5 tracking-tighter">{project.tahun}</span>
-                   </div>
-                   
                    {/* Category Badges Top Left */}
                    <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-2">
                      {(project.kategories && project.kategories.length > 0 ? project.kategories : [project.kategori]).map((kat: string, idx: number) => (
@@ -419,35 +414,7 @@ export default function Projects() {
                     </p>
                   </div>
                   
-                  <div className="mt-3 flex items-center justify-between pt-2 border-t border-slate-100">
-                    <div className="flex items-center gap-2">
-                      {project.store_links && project.store_links.length > 0 ? (
-                        project.store_links.map((link: any, lIdx: number) => (
-                          <a
-                            key={lIdx}
-                            href={sanitizeUrl(link.url)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-blue-600 text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm border border-slate-200"
-                            title={link.type === 'github' ? 'View Code on GitHub' : 'Live Demo'}
-                          >
-                            {link.type === 'github' ? <Github className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />}
-                          </a>
-                        ))
-                      ) : (
-                        <a
-                          href="https://github.com/langss1"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="w-8 h-8 rounded-full bg-slate-100 hover:bg-blue-600 text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm border border-slate-200"
-                          title="View Code on GitHub"
-                        >
-                          <Github className="w-4 h-4" />
-                        </a>
-                      )}
-                    </div>
+                  <div className="mt-3 flex items-center justify-start pt-2 border-t border-slate-100">
                     <span className="text-xs font-bold text-slate-400 group-hover:text-blue-600 transition-colors flex items-center gap-1">
                       Details <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </span>
@@ -476,7 +443,7 @@ export default function Projects() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 w-full md:w-[600px] h-full bg-white shadow-2xl z-[110] border-l border-slate-200 overflow-y-auto overscroll-contain flex flex-col justify-between"
+              className="fixed top-0 right-0 w-full md:w-[600px] h-full bg-white shadow-2xl z-[110] border-l border-slate-200 overflow-y-auto max-h-screen flex flex-col justify-start"
             >
               <div className="h-72 bg-slate-100 relative p-6 border-b border-slate-200 shrink-0">
                 <button 
@@ -494,14 +461,14 @@ export default function Projects() {
                 )}
               </div>
 
-              <div className="p-10">
+              <div className="p-6 md:p-10 flex-1 overflow-y-auto">
                 <div className="mb-8">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-sm font-bold tracking-widest text-[var(--accent)] uppercase">
                       {selectedProject.kategori} • {selectedProject.tahun}
                     </span>
                   </div>
-                  <h3 className="text-4xl font-bold display-text mb-6 leading-tight">{selectedProject.nama}</h3>
+                  <h3 className="text-3xl md:text-4xl font-bold display-text mb-6 leading-tight">{selectedProject.nama}</h3>
                   <div className="flex flex-wrap gap-2 mb-8">
                     {selectedProject.techStack.map((tech: string, i: number) => (
                       <span key={i} className="px-4 py-2 rounded-xl bg-white border border-[var(--border)] shadow-sm text-sm font-bold text-slate-600">
@@ -509,29 +476,31 @@ export default function Projects() {
                       </span>
                     ))}
                   </div>
-                  <p className="text-[var(--text-muted)] leading-relaxed text-lg">
+                  <p className="text-[var(--text-muted)] leading-relaxed text-base md:text-lg">
                     {selectedProject.deskripsi}
                   </p>
                 </div>
 
-                <div className="space-y-4 mt-12">
-                  <h4 className="font-bold text-[var(--text)] uppercase tracking-wider text-sm mb-6">Project Resources</h4>
-                  {selectedProject.store_links.map((link: any, idx: number) => (
-                    <a
-                      key={idx}
-                      href={sanitizeUrl(link.url)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full p-5 bg-white border border-[var(--border)] rounded-2xl flex items-center gap-5 hover:border-[var(--text)] hover:shadow-md transition-all group"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-[var(--text)] group-hover:text-white transition-colors">
-                        {link.type === 'github' ? <Github className="w-5 h-5" /> : <ExternalLink className="w-5 h-5" />}
-                      </div>
-                      <span className="font-bold text-lg flex-1 capitalize">{link.type} Repository</span>
-                      <ChevronRight className="w-6 h-6 text-[var(--text-muted)] group-hover:translate-x-2 group-hover:text-[var(--text)] transition-all" />
-                    </a>
-                  ))}
-                </div>
+                {selectedProject.store_links && selectedProject.store_links.length > 0 && (
+                  <div className="space-y-4 mt-8 pb-10">
+                    <h4 className="font-bold text-[var(--text)] uppercase tracking-wider text-sm mb-4">Project Resources</h4>
+                    {selectedProject.store_links.map((link: any, idx: number) => (
+                      <a
+                        key={idx}
+                        href={sanitizeUrl(link.url)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full p-4 md:p-5 bg-white border border-[var(--border)] rounded-2xl flex items-center gap-5 hover:border-[var(--text)] hover:shadow-md transition-all group"
+                      >
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-[var(--text)] group-hover:text-white transition-colors">
+                          {link.type === 'github' ? <Github className="w-5 h-5" /> : <ExternalLink className="w-5 h-5" />}
+                        </div>
+                        <span className="font-bold text-base md:text-lg flex-1 capitalize">{link.type} Repository</span>
+                        <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-[var(--text-muted)] group-hover:translate-x-2 group-hover:text-[var(--text)] transition-all" />
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
           </>
