@@ -96,15 +96,15 @@ function AutoScrollSkills({ items }: { items: string[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const [isInteracting, setIsInteracting] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Reset scroll position and selection when skill category changes
+  // Reset scroll position and progress when skill category changes
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollLeft = 0;
     }
-    setSelectedIndex(0);
+    setScrollProgress(0);
     setIsInteracting(false);
   }, [items]);
 
@@ -119,28 +119,40 @@ function AutoScrollSkills({ items }: { items: string[] }) {
     }, 3000); // Hold for 3 seconds, then resume auto-scroll
   };
 
+  const updateProgress = () => {
+    const el = scrollRef.current;
+    const inner = innerRef.current;
+    if (el && inner && inner.clientWidth > 0) {
+      const currentScroll = el.scrollLeft % inner.clientWidth;
+      const progress = currentScroll / inner.clientWidth;
+      setScrollProgress(Math.min(1, Math.max(0, progress)));
+    }
+  };
+
   useEffect(() => {
-    const handleInteraction = () => {
+    const handleUserInteraction = () => {
       triggerHold();
     };
 
     const el = scrollRef.current;
     if (el) {
-      el.addEventListener('scroll', handleInteraction, { passive: true });
-      el.addEventListener('touchstart', handleInteraction, { passive: true });
-      el.addEventListener('mousedown', handleInteraction, { passive: true });
+      el.addEventListener('touchstart', handleUserInteraction, { passive: true });
+      el.addEventListener('touchmove', handleUserInteraction, { passive: true });
+      el.addEventListener('mousedown', handleUserInteraction, { passive: true });
+      el.addEventListener('wheel', handleUserInteraction, { passive: true });
     }
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (el) {
-        el.removeEventListener('scroll', handleInteraction);
-        el.removeEventListener('touchstart', handleInteraction);
-        el.removeEventListener('mousedown', handleInteraction);
+        el.removeEventListener('touchstart', handleUserInteraction);
+        el.removeEventListener('touchmove', handleUserInteraction);
+        el.removeEventListener('mousedown', handleUserInteraction);
+        el.removeEventListener('wheel', handleUserInteraction);
       }
     };
   }, [items]);
 
-  // Slow Auto-Scroll Loop
+  // Infinite Seamless Auto-Scroll Loop
   useEffect(() => {
     let animationId: number;
     let lastTime = performance.now();
@@ -149,17 +161,17 @@ function AutoScrollSkills({ items }: { items: string[] }) {
       const el = scrollRef.current;
       const inner = innerRef.current;
 
-      if (el && inner && !isInteracting) {
-        // Auto scroll on mobile or when content overflows
-        if (el.scrollWidth > el.clientWidth) {
+      if (el && inner) {
+        if (!isInteracting) {
           const delta = time - lastTime;
-          el.scrollLeft += 0.02 * delta; // slow pleasant speed (~20px/sec)
+          el.scrollLeft += 0.03 * delta; // continuous pleasant slow speed (~30px/sec)
           
-          // Loop seamlessly
-          if (el.scrollLeft >= inner.clientWidth + 8) {
-            el.scrollLeft -= (inner.clientWidth + 8);
+          // Reset loop seamlessly when scrollLeft reaches inner width
+          if (inner.clientWidth > 0 && el.scrollLeft >= inner.clientWidth) {
+            el.scrollLeft -= inner.clientWidth;
           }
         }
+        updateProgress();
       }
       lastTime = time;
       animationId = requestAnimationFrame(render);
@@ -169,83 +181,72 @@ function AutoScrollSkills({ items }: { items: string[] }) {
     return () => cancelAnimationFrame(animationId);
   }, [isInteracting]);
 
-  const handleArrowClick = (dir: 'left' | 'right') => {
-    triggerHold();
-    const el = scrollRef.current;
-    if (el) {
-      const amount = dir === 'left' ? -120 : 120;
-      el.scrollBy({ left: amount, behavior: 'smooth' });
-    }
-  };
-
-  const handleItemClick = (idx: number) => {
-    setSelectedIndex(idx);
-    triggerHold();
-  };
-
   return (
     <div className="relative group/skills w-full">
-      {/* Left Chevron Indicator & Scroll Button (Mobile) */}
-      <button
-        type="button"
-        onClick={() => handleArrowClick('left')}
-        className="md:hidden absolute -left-2.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white/95 shadow-md border border-blue-200 flex items-center justify-center text-blue-600 active:scale-90 transition-transform"
-        aria-label="Scroll left"
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </button>
-
-      {/* Right Chevron Indicator & Scroll Button (Mobile) */}
-      <button
-        type="button"
-        onClick={() => handleArrowClick('right')}
-        className="md:hidden absolute -right-2.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white/95 shadow-md border border-blue-200 flex items-center justify-center text-blue-600 active:scale-90 transition-transform animate-pulse"
-        aria-label="Scroll right"
-      >
-        <ChevronRight className="w-4 h-4" />
-      </button>
-
       {/* Left Gradient Fade Mask */}
-      <div className="md:hidden absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white via-white/80 to-transparent z-10 pointer-events-none" />
+      <div className="md:hidden absolute left-0 top-0 bottom-0 w-5 bg-gradient-to-r from-white via-white/80 to-transparent z-10 pointer-events-none" />
 
       {/* Right Gradient Fade Mask */}
-      <div className="md:hidden absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white via-white/80 to-transparent z-10 pointer-events-none" />
+      <div className="md:hidden absolute right-0 top-0 bottom-0 w-5 bg-gradient-to-l from-white via-white/80 to-transparent z-10 pointer-events-none" />
 
       {/* Scrollable Items Container */}
       <div 
         ref={scrollRef}
-        className="flex md:block overflow-x-auto md:overflow-visible [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full px-3 md:px-0 py-1"
+        className="flex md:block overflow-x-auto md:overflow-visible [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full px-2 md:px-0 py-1"
       >
+        {/* Set 1 (Original for inner.clientWidth measurement) */}
         <div ref={innerRef} className="flex md:flex-wrap gap-2 shrink-0 w-max md:w-full">
           {items.map((item, idx) => (
             <button
               key={`orig-${item}-${idx}`}
-              onClick={() => handleItemClick(idx)}
-              className={`px-3 py-1.5 rounded-xl text-xs md:text-sm font-semibold border whitespace-nowrap shrink-0 transition-all cursor-pointer ${
-                selectedIndex === idx 
-                  ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20 scale-105" 
-                  : "bg-blue-50/60 text-blue-700 hover:bg-blue-100/70 border-blue-100/70"
-              }`}
+              type="button"
+              onClick={triggerHold}
+              className="px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-semibold bg-blue-50/60 text-blue-700 border border-blue-100/70 whitespace-nowrap shrink-0 hover:bg-blue-100/70 transition-colors cursor-pointer active:scale-95"
             >
               {item}
             </button>
           ))}
         </div>
-        {/* Duplicate items for seamless continuous looping on mobile */}
+
+        {/* Set 2 (Duplicate for continuous loop) */}
         <div className="flex md:hidden gap-2 shrink-0 ml-2">
           {items.map((item, idx) => (
             <button
-              key={`dup-${item}-${idx}`}
-              onClick={() => handleItemClick(idx)}
-              className={`px-3 py-1.5 rounded-xl text-xs md:text-sm font-semibold border whitespace-nowrap shrink-0 transition-all cursor-pointer ${
-                selectedIndex === idx 
-                  ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20 scale-105" 
-                  : "bg-blue-50/60 text-blue-700 hover:bg-blue-100/70 border-blue-100/70"
-              }`}
+              key={`dup1-${item}-${idx}`}
+              type="button"
+              onClick={triggerHold}
+              className="px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-semibold bg-blue-50/60 text-blue-700 border border-blue-100/70 whitespace-nowrap shrink-0 hover:bg-blue-100/70 transition-colors cursor-pointer active:scale-95"
             >
               {item}
             </button>
           ))}
+        </div>
+
+        {/* Set 3 (Duplicate to guarantee scrollWidth > inner.clientWidth + clientWidth) */}
+        <div className="flex md:hidden gap-2 shrink-0 ml-2">
+          {items.map((item, idx) => (
+            <button
+              key={`dup2-${item}-${idx}`}
+              type="button"
+              onClick={triggerHold}
+              className="px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-semibold bg-blue-50/60 text-blue-700 border border-blue-100/70 whitespace-nowrap shrink-0 hover:bg-blue-100/70 transition-colors cursor-pointer active:scale-95"
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Horizontal Swipe Indicator Bar Under Pills (Mobile) */}
+      <div className="md:hidden flex items-center justify-center mt-3">
+        <div className="w-36 sm:w-48 h-1.5 bg-blue-100/90 rounded-full overflow-hidden relative shadow-inner">
+          <div 
+            className="h-full bg-blue-600 rounded-full transition-transform duration-75 ease-out shadow-sm"
+            style={{
+              width: '35%',
+              transform: `translateX(${scrollProgress * 185}%)`
+            }}
+          />
         </div>
       </div>
     </div>

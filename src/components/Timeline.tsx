@@ -218,6 +218,14 @@ export default function Timeline() {
                        ))}
                      </div>
                    )}
+
+                   {/* Date Badge on Mobile (Bottom Right of Card Image) */}
+                   {exp.masa && (
+                     <div className="md:hidden absolute bottom-4 right-4 z-20 px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-xl text-[10px] font-bold text-slate-700 tracking-wider border border-slate-200/80 shadow-sm">
+                       {exp.masa}
+                     </div>
+                   )}
+
                    {exp.image ? (
                      <ImageWithLoader 
                        src={exp.image} 
@@ -231,7 +239,7 @@ export default function Timeline() {
                         
                         <div className="text-center z-10 px-4 py-2 bg-white/70 rounded-xl shadow-sm backdrop-blur-sm">
                            <span className="text-slate-600 font-bold uppercase tracking-widest text-xs display-text">
-                              Evidence
+                               Evidence
                            </span>
                         </div>
                      </div>
@@ -244,7 +252,8 @@ export default function Timeline() {
                    {/* Header Row: Title & Year Badge */}
                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-1">
                       <h3 className="text-2xl font-bold display-text text-[var(--text)]">{exp.posisi}</h3>
-                      <div className="inline-flex items-center px-4 py-1.5 border border-[var(--border)] bg-slate-50 rounded-lg text-[var(--text-muted)] text-xs font-bold tracking-widest w-max">
+                      {/* Desktop Only Year Badge */}
+                      <div className="hidden md:inline-flex items-center px-4 py-1.5 border border-[var(--border)] bg-slate-50 rounded-lg text-[var(--text-muted)] text-xs font-bold tracking-widest w-max">
                          {exp.masa}
                       </div>
                    </div>
@@ -256,7 +265,7 @@ export default function Timeline() {
                    <ul className="space-y-3 mb-6 flex-1">
                      {exp.poin && exp.poin.map((p: string, i: number) => (
                         <li key={i} className="flex items-start gap-3">
-                           <span className="text-[#0099ff] font-bold text-sm leading-none mt-1">→</span>
+                           <span className="w-2 h-2 rounded-full bg-[#0099ff] shrink-0 mt-2 shadow-sm" />
                            <span className="text-[var(--text-muted)] text-sm leading-relaxed">{p}</span>
                         </li>
                      ))}

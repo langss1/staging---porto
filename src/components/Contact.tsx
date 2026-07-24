@@ -158,8 +158,8 @@ export default function Contact() {
               Ready to<br className="hidden md:block"/> Collaborate?
             </h2>
             
-            {/* Satellite and Message Bubble Animation Container */}
-            <div className="absolute top-0 right-0 md:-right-12 lg:-right-32 xl:-right-48 -translate-y-16 md:-translate-y-8 z-30 flex flex-col items-center">
+            {/* Desktop Only Satellite and Message Bubble Animation Container */}
+            <div className="hidden md:flex absolute top-0 -right-12 lg:-right-32 xl:-right-48 -translate-y-8 z-30 flex-col items-center">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentIndex}
@@ -181,8 +181,6 @@ export default function Contact() {
                     className="relative group cursor-pointer" 
                     onClick={() => setCyclePhase(cyclePhase === 'orbit' ? 'popup' : 'popup_exit')}
                   >
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-blue-300 rounded-full animate-ping opacity-30"></div>
-                    
                     {activeTestimonial && activeTestimonial.avatar_url && isValidAvatarUrl(activeTestimonial.avatar_url) ? (
                       <img src={activeTestimonial.avatar_url} alt="User Satellite" className="relative w-14 h-14 md:w-16 md:h-16 rounded-full object-cover shadow-xl border-4 border-white z-10 hover:scale-110 transition-transform" />
                     ) : (
@@ -251,8 +249,92 @@ export default function Contact() {
         </motion.div>
       </div>
 
+      {/* Mobile Only Testimonial Orbit Container (Positioned as illustrated: Quote Box on Left, Orbiting Avatar on Right) */}
+      <div className="md:hidden w-full max-w-5xl mx-auto px-6 mt-6 mb-2 relative z-30 min-h-[140px]">
+        <div className="relative w-full flex items-center justify-between min-h-[120px]">
+          {/* Testimonial Quote Bubble (Left side red rectangle) */}
+          <div className="flex-1 pr-3 max-w-[68%]">
+            <AnimatePresence mode="wait">
+              {cyclePhase === 'popup' && activeTestimonial && (
+                <motion.div 
+                  key={`mob-bubble-${activeTestimonial.id}`}
+                  initial={{ opacity: 0, scale: 0.85, x: -20 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.85, x: -20 }}
+                  transition={{ type: "spring", bounce: 0.3 }}
+                  className="bg-white rounded-2xl p-3.5 shadow-xl border border-blue-100 w-full text-left z-40"
+                >
+                  <p className="text-[11px] text-slate-700 italic mb-2.5 font-medium leading-snug line-clamp-3">
+                    "{activeTestimonial.message}"
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {activeTestimonial.avatar_url && isValidAvatarUrl(activeTestimonial.avatar_url) ? (
+                      <img src={activeTestimonial.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover border border-slate-100 shrink-0" />
+                    ) : (
+                      <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-[10px] shadow-sm shrink-0">
+                        {activeTestimonial.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-bold text-slate-900 truncate leading-tight">{activeTestimonial.name}</p>
+                      <p className="text-[9px] text-blue-600 font-bold tracking-wide uppercase truncate">{activeTestimonial.role}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Satellite Avatar with Orbit Arc (Right side red circle & semi-circle arc motion) */}
+          <div className="relative shrink-0 flex items-center justify-center w-24 h-24 overflow-visible">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`mob-sat-${currentIndex}`}
+                initial={{ x: 50, y: -90, opacity: 0, scale: 0.5 }}
+                animate={{ 
+                  x: 0, 
+                  y: 0, 
+                  opacity: 1, 
+                  scale: 1,
+                  transition: {
+                    x: { duration: 1.1, ease: [0.16, 1, 0.3, 1] },
+                    y: { duration: 1.1, ease: [0.34, 1.3, 0.64, 1] },
+                    opacity: { duration: 0.6 }
+                  }
+                }}
+                exit={{ 
+                  x: 50, 
+                  y: 90, 
+                  opacity: 0, 
+                  scale: 0.5,
+                  transition: {
+                    x: { duration: 0.8, ease: "easeIn" },
+                    y: { duration: 0.8, ease: "easeIn" },
+                    opacity: { duration: 0.4 }
+                  }
+                }}
+                className="relative flex items-center justify-center z-10"
+              >
+                <div 
+                  className="relative group cursor-pointer" 
+                  onClick={() => setCyclePhase(cyclePhase === 'orbit' ? 'popup' : 'popup_exit')}
+                >
+                  {activeTestimonial && activeTestimonial.avatar_url && isValidAvatarUrl(activeTestimonial.avatar_url) ? (
+                    <img src={activeTestimonial.avatar_url} alt="User Satellite" className="relative w-12 h-12 rounded-full object-cover shadow-lg border-2 border-white z-10 hover:scale-110 transition-transform" />
+                  ) : (
+                    <div className="relative w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-blue-600 z-10 border-2 border-white hover:scale-110 transition-transform overflow-hidden">
+                      <User className="w-6 h-6 text-blue-500" />
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+
       {/* Merged Copyright Footer */}
-      <div className="relative z-10 mt-32 text-center text-slate-600/80 text-sm font-medium">
+      <div className="relative z-10 mt-6 text-center text-slate-600/80 text-sm font-medium">
          <p>© 2026 portofolio gilang</p>
       </div>
 

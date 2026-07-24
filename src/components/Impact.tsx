@@ -141,7 +141,7 @@ export default function Impact() {
         
         {/* Right Side: Stacked Cards Deck */}
         <div 
-           className="w-full lg:w-3/5 relative h-[500px] md:h-[600px] flex items-center justify-center perspective-1000 mt-0"
+           className="w-full lg:w-3/5 relative h-[380px] sm:h-[450px] md:h-[550px] flex items-center justify-center perspective-1000 mt-0"
            onMouseEnter={() => setIsPaused(true)}
            onMouseLeave={() => setIsPaused(false)}
            onTouchStart={() => setIsPaused(true)}
@@ -178,7 +178,7 @@ export default function Impact() {
                         transition: { duration: 0.5, ease: "easeOut" }
                      }}
                      transition={{ type: "spring", stiffness: 120, damping: 20, mass: 1 }}
-                     className="absolute w-[95%] sm:w-[450px] md:w-[500px] h-[450px] md:h-[550px] bg-[var(--surface)] rounded-[32px] shadow-2xl overflow-hidden border border-[var(--border)] flex flex-col cursor-grab active:cursor-grabbing origin-bottom"
+                     className="absolute w-[95%] sm:w-[450px] md:w-[500px] h-[340px] sm:h-[400px] md:h-[500px] bg-[var(--surface)] rounded-[24px] sm:rounded-[32px] shadow-2xl overflow-hidden border border-[var(--border)] flex flex-col cursor-grab active:cursor-grabbing origin-bottom"
                      drag="x"
                      dragConstraints={{ left: 0, right: 0 }}
                      dragElastic={0.2}
@@ -192,7 +192,7 @@ export default function Impact() {
                      }}
                    >
                      {/* Card Content Top (Image) */}
-                     <div className="h-[45%] w-full bg-slate-100 relative overflow-hidden flex flex-col items-center justify-center">
+                     <div className="h-[42%] w-full bg-slate-100 relative overflow-hidden flex flex-col items-center justify-center">
                         {card.foto ? (
                           <ImageWithLoader 
                             src={card.foto}
@@ -209,14 +209,14 @@ export default function Impact() {
                      </div>
                      
                      {/* Card Content Bottom (Text) */}
-                     <div className="h-[55%] w-full p-6 md:p-8 flex flex-col justify-center bg-[var(--surface)]">
-                        <span className="text-xs font-bold px-3 py-1 bg-blue-50 text-blue-600 rounded-full uppercase tracking-wider mb-4 w-max">
+                     <div className="h-[58%] w-full p-4 sm:p-6 md:p-8 flex flex-col justify-start bg-[var(--surface)]">
+                        <span className="text-[11px] sm:text-xs font-bold px-3 py-1 bg-blue-50 text-blue-600 rounded-full uppercase tracking-wider mb-2 w-max">
                           {card.role}
                         </span>
-                        <h3 className="text-2xl md:text-3xl font-black display-text text-[var(--text)] mb-3 line-clamp-2">
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-black display-text text-[var(--text)] mb-1.5 line-clamp-2">
                           {card.organisasi}
                         </h3>
-                        <p className="text-[var(--text-muted)] text-sm md:text-base leading-relaxed line-clamp-4">
+                        <p className="text-[var(--text-muted)] text-xs sm:text-sm md:text-base leading-relaxed line-clamp-4">
                           {card.deskripsi}
                         </p>
                      </div>

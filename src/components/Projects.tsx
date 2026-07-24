@@ -204,7 +204,7 @@ export default function Projects() {
                                  hidden: { opacity: 1 },
                                  visible: { opacity: 1 }
                               }}
-                              className="text-4xl md:text-6xl font-bold display-text text-[var(--text)] tracking-tight leading-[0.9] md:leading-[0.9] z-0 relative"
+                              className="text-4xl md:text-6xl font-bold display-text text-[var(--text)] tracking-tight leading-[0.9] md:leading-[0.9] z-0 relative -ml-6 md:-ml-10"
                           >
                               <span>
                                 {"esearch &".split("").map((char, i) => (
@@ -226,7 +226,7 @@ export default function Projects() {
                                  hidden: { opacity: 1 },
                                  visible: { opacity: 1 }
                               }}
-                              className="text-4xl md:text-6xl font-bold display-text text-[var(--text)] tracking-tight leading-[0.9] md:leading-[0.9] z-10 relative"
+                              className="text-4xl md:text-6xl font-bold display-text text-[var(--text)] tracking-tight leading-[0.9] md:leading-[0.9] z-10 relative -ml-6 md:-ml-10"
                           >
                               <span>
                                 {"rojects".split("").map((char, i) => (
@@ -385,22 +385,31 @@ export default function Projects() {
                        </span>
                      ))}
                    </div>
+                   
+                   {/* Year Badge (Bottom Right of Card Image) */}
+                   {project.tahun && (
+                     <div className="absolute bottom-4 right-4 z-20 px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-xl text-[10px] font-bold text-slate-700 tracking-wider border border-white/50 shadow-sm">
+                       {project.tahun}
+                     </div>
+                   )}
                 </div>
 
                 {/* Bottom Half: Details */}
-                <div className="p-6 flex flex-col flex-1 relative bg-white z-20">
-                  <div className="mb-4">
-                    <ExpandableTechStack techStack={project.techStack} limit={3} />
-                  </div>
+                <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 relative bg-white z-20">
+                  <div>
+                    <div className="mb-2">
+                      <ExpandableTechStack techStack={project.techStack} limit={3} />
+                    </div>
 
-                  <h4 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">{project.nama}</h4>
-                  <p className="text-slate-500 text-sm leading-relaxed line-clamp-2">
-                    {project.deskripsi}
-                  </p>
+                    <h4 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">{project.nama}</h4>
+                    <p className="text-slate-500 text-xs md:text-sm leading-relaxed line-clamp-2">
+                      {project.deskripsi}
+                    </p>
+                  </div>
                   
-                  <div className="mt-5 flex items-center text-sm font-bold text-blue-600 group-hover:text-blue-700">
+                  <div className="mt-3 flex items-center text-xs md:text-sm font-bold text-blue-600 group-hover:text-blue-700">
                      <span className="mr-2">Explore</span>
-                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               </motion.div>

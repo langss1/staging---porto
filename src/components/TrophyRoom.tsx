@@ -138,7 +138,7 @@ export default function TrophyRoom() {
                               onor &
                           </h2>
                       </div>
-                      <div className="flex items-center mt-[-45px] md:mt-[-50px] ml-12 md:ml-24 relative z-20">
+                      <div className="flex items-center mt-[-45px] md:mt-[-50px] ml-20 md:ml-36 relative z-20">
                           <span className={`${greatVibes.className} text-[90px] md:text-[130px] font-bold -mr-1 md:-mr-2 leading-none translate-y-1 md:translate-y-2 bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 to-blue-600 p-12 -m-12 z-20 relative`}>A</span>
                           <h2 className="text-4xl md:text-6xl font-bold display-text text-[var(--text)] tracking-tight leading-[0.9] md:leading-[0.9] z-10 relative -ml-8 md:-ml-12">
                               wards

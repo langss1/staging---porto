@@ -95,10 +95,10 @@ export default function Organization() {
               <div className="flex flex-row justify-between items-center w-full">
                   
                   {/* Title */}
-                  <div className="flex flex-col items-start scale-[0.65] md:scale-100 origin-left ml-2 md:ml-0 -mr-24 md:mr-0 shrink-0">
+                  <div className="flex flex-col items-start scale-[0.8] md:scale-100 origin-left ml-2 md:ml-0 -mr-12 md:mr-0 shrink-0">
                       <div className="flex items-center">
                           <span className={`${greatVibes.className} text-[90px] md:text-[130px] font-bold -mr-1 md:-mr-2 leading-none translate-y-1 md:translate-y-2 bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 to-blue-600 p-12 -m-12 z-10 relative`}>O</span>
-                          <h2 className="text-4xl md:text-6xl font-bold display-text text-[var(--text)] tracking-tight leading-[0.9] md:leading-[0.9] z-0 relative -ml-8 md:-ml-12">
+                          <h2 className="text-4xl md:text-6xl font-bold display-text text-[var(--text)] tracking-tight leading-[0.9] md:leading-[0.9] z-0 relative -ml-6 md:-ml-10">
                               rganization
                           </h2>
                       </div>

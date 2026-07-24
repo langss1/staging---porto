@@ -70,7 +70,10 @@ export default function Home() {
           {/* Top-Right Navbar & Menu */}
           <div className="fixed top-4 right-4 md:top-6 md:right-8 z-50 flex flex-col gap-2 items-end">
             <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={() => {
+                setIsMenuOpen(!isMenuOpen);
+                window.dispatchEvent(new CustomEvent('toggleMobileDock'));
+              }}
               className="w-auto pl-2 pr-4 py-2 md:pl-2.5 md:pr-5 md:py-2.5 bg-[var(--surface)]/30 backdrop-blur-md border border-[var(--border)] rounded-full flex items-center gap-2.5 md:gap-3 pointer-events-auto hover:bg-[var(--surface)]/60 transition-all cursor-pointer shadow-sm"
             >
               <motion.div layoutId="logo-gw" className="w-9 h-9 md:w-10 md:h-10 rounded-full overflow-hidden relative shadow-sm shrink-0">

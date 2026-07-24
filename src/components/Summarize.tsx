@@ -75,7 +75,7 @@ export default function Summarize() {
   };
 
   return (
-    <section className="py-16 md:py-24 bg-[var(--bg)] relative overflow-hidden" id="summarize">
+    <section className="py-8 md:py-16 bg-[var(--bg)] relative overflow-hidden" id="summarize">
       {/* Decorative Background */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/30 rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-100/30 rounded-full blur-[120px] pointer-events-none translate-y-1/2 -translate-x-1/2"></div>
@@ -88,17 +88,17 @@ export default function Summarize() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-2 md:mb-6"
         >
           <div className="flex items-center justify-center">
             <span className={`${greatVibes.className} text-[90px] md:text-[130px] font-bold -mr-1 md:-mr-2 leading-none translate-y-1 md:translate-y-2 bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 to-blue-600 p-12 -m-12 z-10 relative`}>S</span>
-            <h2 className="text-4xl md:text-6xl font-bold display-text text-[var(--text)] tracking-tight leading-[0.9] md:leading-[0.9] z-0 relative -ml-6 md:-ml-8">
+            <h2 className="text-4xl md:text-6xl font-bold display-text text-[var(--text)] tracking-tight leading-[0.9] md:leading-[0.9] z-0 relative -ml-8 md:-ml-12">
               ummarize
             </h2>
           </div>
         </motion.div>
 
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4 md:gap-8 lg:gap-16">
           
           {/* Radar Chart (Transparent Background) */}
           <motion.div 
@@ -107,11 +107,11 @@ export default function Summarize() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, type: "spring", bounce: 0.3 }}
-            className="w-full lg:w-1/2 h-[400px] md:h-[550px] flex items-center justify-center -ml-4 md:-ml-8"
+            className="w-full lg:w-1/2 h-[300px] sm:h-[350px] md:h-[500px] flex items-center justify-center px-2 md:px-0 md:-ml-8"
           >
             {isChartInView && (
               <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="75%" data={chartData}>
+                <RadarChart cx="50%" cy="50%" outerRadius="65%" data={chartData}>
                   <PolarGrid stroke="#cbd5e1" />
                   <PolarAngleAxis 
                     dataKey="subject" 
