@@ -23,14 +23,18 @@ export default function Hero() {
             const { data } = await supabase.from('profile').select('*').single();
             if (data) setProfileData(data);
             
-            // Fetch total projects + research
+            // Fetch total projects (Research & Projects section)
             const { count: projCount } = await supabase.from('projects').select('*', { count: 'exact', head: true });
-            const { count: resCount } = await supabase.from('research').select('*', { count: 'exact', head: true });
-            setProjectsCount((projCount || 0) + (resCount || 0));
+            setProjectsCount(projCount || 0);
             
-            // Fetch total work experiences
-            const { count: expCount } = await supabase.from('work_experiences').select('*', { count: 'exact', head: true });
-            setExperiencesCount(expCount || 0);
+            // Fetch total experiences (Work, Impact, and Organizations sections)
+            const [workRes, impactRes, orgRes] = await Promise.all([
+                supabase.from('work_experiences').select('*', { count: 'exact', head: true }),
+                supabase.from('impacts').select('*', { count: 'exact', head: true }),
+                supabase.from('organizations').select('*', { count: 'exact', head: true }),
+            ]);
+            const totalExp = (workRes.count || 0) + (impactRes.count || 0) + (orgRes.count || 0);
+            setExperiencesCount(totalExp);
         };
         fetchStats();
     }, []);

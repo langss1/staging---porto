@@ -112,15 +112,21 @@ export async function POST(request: Request) {
       .single();
 
     // 2. Fetch all portfolio data and their latest update timestamps
-    const [projectsRes, experiencesRes, skillsRes] = await Promise.all([
-      supabase.from('projects').select('title, description, tags, created_at'),
-      supabase.from('experiences').select('company, role, duration, description, created_at'),
-      supabase.from('m_shape_skills').select('category, skills')
+    const [projectsRes, workExperiencesRes, impactsRes, orgsRes, honorsRes, skillsRes] = await Promise.all([
+      supabase.from('projects').select('title, description, tech_stack, categories, created_at'),
+      supabase.from('work_experiences').select('company, posisi, masa, poin, tech_stack, created_at'),
+      supabase.from('impacts').select('title, organization, description, items, created_at'),
+      supabase.from('organizations').select('role, org, period, responsibilities, created_at'),
+      supabase.from('honors').select('title, event, year, desc_text, created_at'),
+      supabase.from('m_shape_skills').select('id, items, evidence')
     ]);
 
     const portfolioData = {
       projects: projectsRes.data || [],
-      experiences: experiencesRes.data || [],
+      work_experiences: workExperiencesRes.data || [],
+      impacts: impactsRes.data || [],
+      organizations: orgsRes.data || [],
+      honors: honorsRes.data || [],
       skills: skillsRes.data || []
     };
 
@@ -132,7 +138,13 @@ export async function POST(request: Request) {
       portfolioData.projects.forEach(p => {
         if (p.created_at) latestUpdate = Math.max(latestUpdate, new Date(p.created_at).getTime());
       });
-      portfolioData.experiences.forEach(e => {
+      portfolioData.work_experiences.forEach(e => {
+        if (e.created_at) latestUpdate = Math.max(latestUpdate, new Date(e.created_at).getTime());
+      });
+      portfolioData.impacts.forEach(e => {
+        if (e.created_at) latestUpdate = Math.max(latestUpdate, new Date(e.created_at).getTime());
+      });
+      portfolioData.organizations.forEach(e => {
         if (e.created_at) latestUpdate = Math.max(latestUpdate, new Date(e.created_at).getTime());
       });
 
@@ -264,27 +276,25 @@ export async function POST(request: Request) {
   }
 }
 
-function calculateHeuristicScores(data: { projects: unknown[]; experiences: unknown[]; skills: unknown[] }): CompetencyScores {
+function calculateHeuristicScores(data: { projects: unknown[]; work_experiences: unknown[]; impacts: unknown[]; organizations: unknown[]; honors: unknown[]; skills: unknown[] }): CompetencyScores {
   const projCount = data.projects.length;
-  const expCount = data.experiences.length;
+  const workCount = data.work_experiences.length;
+  const impactCount = data.impacts.length;
+  const orgCount = data.organizations.length;
+  const honorCount = data.honors.length;
   
-  let orgCount = 0;
-  let workCount = 0;
   let researchCount = 0;
-
-  data.experiences.forEach((exp: unknown) => {
-    const e = exp as Record<string, unknown>;
-    const role = (String(e.role || '')).toLowerCase();
-    if (role.includes("staff") || role.includes("member") || role.includes("head") || role.includes("lead")) orgCount++;
-    if (role.includes("research") || role.includes("data") || role.includes("analysis")) researchCount++;
-    if (role.includes("engineer") || role.includes("developer") || role.includes("intern")) workCount++;
+  data.projects.forEach((proj: any) => {
+    const title = (proj.title || "").toLowerCase();
+    const desc = (proj.description || "").toLowerCase();
+    if (title.includes("research") || desc.includes("research") || title.includes("paper")) researchCount++;
   });
 
   return {
-    Academic: Math.min(100, 65 + (projCount * 2)),
-    Research: Math.min(100, 60 + (researchCount * 5)),
-    Work: Math.min(100, 65 + (workCount * 5) + expCount),
-    Organization: Math.min(100, 65 + (orgCount * 4)),
-    Impact: Math.min(100, 60 + (projCount * 3) + (expCount * 2)),
+    Academic: Math.min(100, 65 + (projCount * 2) + (honorCount * 3)),
+    Research: Math.min(100, 60 + (researchCount * 8) + (projCount * 2)),
+    Work: Math.min(100, 65 + (workCount * 7)),
+    Organization: Math.min(100, 65 + (orgCount * 5)),
+    Impact: Math.min(100, 60 + (impactCount * 6) + (projCount * 2)),
   };
 }
