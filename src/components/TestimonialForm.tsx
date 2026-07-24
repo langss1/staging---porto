@@ -57,7 +57,11 @@ export default function TestimonialForm({ isOpen, onClose }: TestimonialFormProp
       
     } catch (err: any) {
       console.error("Error submitting testimonial:", err);
-      setError(err.message || "Failed to submit comment.");
+      if (err?.message?.includes("testimonials") || err?.code === "PGRST205") {
+        setError("Tabel 'testimonials' belum dibuat di database Supabase. Silakan jalankan query SQL pembuatan tabel di Supabase SQL Editor.");
+      } else {
+        setError(err.message || "Failed to submit comment.");
+      }
     } finally {
       setLoading(false);
     }

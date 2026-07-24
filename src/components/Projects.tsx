@@ -404,12 +404,42 @@ export default function Projects() {
                     <h4 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">{project.nama}</h4>
                     <p className="text-slate-500 text-xs md:text-sm leading-relaxed line-clamp-2">
                       {project.deskripsi}
+                      <span className="text-blue-600 font-bold ml-1 hover:underline">more</span>
                     </p>
                   </div>
                   
-                  <div className="mt-3 flex items-center text-xs md:text-sm font-bold text-blue-600 group-hover:text-blue-700">
-                     <span className="mr-2">Explore</span>
-                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  <div className="mt-3 flex items-center justify-between pt-2 border-t border-slate-100">
+                    <div className="flex items-center gap-2">
+                      {project.store_links && project.store_links.length > 0 ? (
+                        project.store_links.map((link: any, lIdx: number) => (
+                          <a
+                            key={lIdx}
+                            href={sanitizeUrl(link.url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-blue-600 text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm border border-slate-200"
+                            title={link.type === 'github' ? 'View Code on GitHub' : 'Live Demo'}
+                          >
+                            {link.type === 'github' ? <Github className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />}
+                          </a>
+                        ))
+                      ) : (
+                        <a
+                          href="https://github.com/langss1"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-8 h-8 rounded-full bg-slate-100 hover:bg-blue-600 text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm border border-slate-200"
+                          title="View Code on GitHub"
+                        >
+                          <Github className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+                    <span className="text-xs font-bold text-slate-400 group-hover:text-blue-600 transition-colors flex items-center gap-1">
+                      Details <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </span>
                   </div>
                 </div>
               </motion.div>
