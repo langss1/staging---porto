@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { validateFileUpload } from "@/lib/security";
 
 export default function ProfileEditor({ onClose }: { onClose?: () => void }) {
   const [profile, setProfile] = useState<any>(null);
@@ -82,10 +83,19 @@ export default function ProfileEditor({ onClose }: { onClose?: () => void }) {
     try {
       setUploadingCV(true);
       if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('You must select an image to upload.');
+        throw new Error('You must select a file to upload.');
       }
       const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
+
+      // MED-02: Validate MIME type and file size before uploading
+      const validationError = validateFileUpload(file, {
+        allowedMimes: ['application/pdf'],
+        maxSizeBytes: 5 * 1024 * 1024, // 5 MB
+      });
+      if (validationError) throw new Error(validationError);
+
+      // Derive extension from MIME type, not from file.name
+      const fileExt = 'pdf';
       const fileName = `CV_${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 
@@ -116,7 +126,22 @@ export default function ProfileEditor({ onClose }: { onClose?: () => void }) {
         throw new Error('You must select an image to upload.');
       }
       const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
+
+      // MED-02: Validate MIME type and file size before uploading
+      const validationError = validateFileUpload(file, {
+        allowedMimes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+        maxSizeBytes: 5 * 1024 * 1024, // 5 MB
+      });
+      if (validationError) throw new Error(validationError);
+
+      // Derive extension from MIME type, not from file.name
+      const mimeToExt: Record<string, string> = {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/webp': 'webp',
+        'image/gif': 'gif',
+      };
+      const fileExt = mimeToExt[file.type] || 'jpg';
       const fileName = `Profile_${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 

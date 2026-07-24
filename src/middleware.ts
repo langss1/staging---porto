@@ -43,9 +43,12 @@ export async function middleware(request: NextRequest) {
       if (res.ok) {
         const userData = await res.json();
         const userEmail = userData.email;
-        const adminEmail = process.env.ADMIN_EMAIL || 'gilangonwork@gmail.com';
-        
-        if (pathname.startsWith('/admin') && userEmail !== adminEmail) {
+        // HIGH-02: Never fall back to a hardcoded email. ADMIN_EMAIL must be set.
+        const adminEmail = process.env.ADMIN_EMAIL;
+        if (!adminEmail) {
+          console.error('ADMIN_EMAIL environment variable is not set!');
+          isAuthenticated = false;
+        } else if (pathname.startsWith('/admin') && userEmail !== adminEmail) {
           isAuthenticated = false;
         } else {
           isAuthenticated = true;
@@ -57,9 +60,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // Paths that do NOT require authentication
-  const publicPaths = ['/admin/login', '/staging'];
-  
-  if (!isAuthenticated && !publicPaths.includes(pathname)) {
+  // INFO-02: Use startsWith so /staging/* sub-paths are also treated as public
+  const isPublicPath =
+    pathname === '/admin/login' ||
+    pathname.startsWith('/staging');
+
+  if (!isAuthenticated && !isPublicPath) {
     // If they are trying to access admin dashboard, send to admin login
     if (pathname.startsWith('/admin')) {
       const loginUrl = new URL('/admin/login', request.url);

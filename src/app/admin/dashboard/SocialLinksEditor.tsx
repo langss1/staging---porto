@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { sanitizeUrl } from "@/lib/security";
 
 export default function SocialLinksEditor({ onClose }: { onClose?: () => void }) {
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -47,15 +48,25 @@ export default function SocialLinksEditor({ onClose }: { onClose?: () => void })
     e.preventDefault();
     if (!profileId) return;
     
+    // MED-05: Sanitize all URLs before persisting to the database.
+    // This prevents stored XSS via javascript: or data: URIs.
+    const cleanInstagram = sanitizeUrl(formData.instagram_url);
+    const cleanLinkedin  = sanitizeUrl(formData.linkedin_url);
+    const cleanGithub    = sanitizeUrl(formData.github_url);
+    // Email field uses mailto: which sanitizeUrl allows; validate format too
+    const rawEmail = formData.email.trim();
+    const cleanEmail = rawEmail.startsWith('mailto:') || rawEmail.startsWith('https://') || rawEmail === ''
+      ? rawEmail
+      : '#'; // block anything that isn't mailto:, https://, or empty
+
     setSaving(true);
-    // Note: ensure these columns exist in the 'profile' table!
     const { error } = await supabase
       .from('profile')
       .update({
-        instagram_url: formData.instagram_url,
-        linkedin_url: formData.linkedin_url,
-        github_url: formData.github_url,
-        email: formData.email,
+        instagram_url: cleanInstagram === '#' ? '' : cleanInstagram,
+        linkedin_url:  cleanLinkedin  === '#' ? '' : cleanLinkedin,
+        github_url:    cleanGithub    === '#' ? '' : cleanGithub,
+        email:         cleanEmail     === '#' ? '' : cleanEmail,
         updated_at: new Date()
       })
       .eq('id', profileId);

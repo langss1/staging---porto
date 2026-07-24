@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Plus, Trash2, Edit2, X, Check, Loader2, Image as ImageIcon, ChevronLeft, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { validateFileUpload } from "@/lib/security";
 
 export type ColumnDef = {
   key: string;
@@ -319,9 +320,30 @@ export default function GenericEditor({ tableName, title, columns }: GenericEdit
                           if (!file) return;
                           
                           try {
-                            const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                            // MED-02: Validate MIME type and size before upload
+                            const ALLOWED_IMAGE_MIMES = [
+                              'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+                            ];
+                            const validationError = validateFileUpload(file, {
+                              allowedMimes: ALLOWED_IMAGE_MIMES,
+                              maxSizeBytes: 8 * 1024 * 1024, // 8 MB
+                            });
+                            if (validationError) {
+                              showToast(validationError, 'error');
+                              e.target.value = '';
+                              return;
+                            }
+
+                            // Derive extension from MIME type, not file.name
+                            const mimeToExt: Record<string, string> = {
+                              'image/jpeg': 'jpg',
+                              'image/png': 'png',
+                              'image/webp': 'webp',
+                              'image/gif': 'gif',
+                            };
+                            const ext = mimeToExt[file.type] || 'jpg';
                             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e4);
-                            const filename = `${tableName}/${uniqueSuffix}-${safeName}`;
+                            const filename = `${tableName}/${uniqueSuffix}.${ext}`;
 
                             const { data, error } = await supabase.storage
                               .from('portfolio-files')

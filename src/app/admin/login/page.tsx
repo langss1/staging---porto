@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { validateRedirectPath } from "@/lib/security";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -24,14 +25,21 @@ export default function AdminLogin() {
     if (error) {
       setError("Invalid login credentials.");
       setLoading(false);
-    } else {
-      if (data.session) {
-        document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=${data.session.expires_in}; SameSite=Lax`;
-      }
-      // Redirect back to the page they were trying to access, or dashboard by default
+    } else if (data.session) {
+      // CRIT-03: Do NOT manually set document.cookie — let the Supabase SDK
+      //          manage the session cookie. Setting it via document.cookie would
+      //          make it readable by JavaScript (no HttpOnly), which enables
+      //          session token theft via XSS.
+      //
+      // CRIT-02: Validate the ?from= redirect target. Only relative paths
+      //          starting with "/" are allowed to prevent open-redirect attacks.
       const searchParams = new URLSearchParams(window.location.search);
-      const redirectTo = searchParams.get('from') || '/admin/dashboard';
-      window.location.href = redirectTo;
+      const rawFrom = searchParams.get("from");
+      const redirectTo = validateRedirectPath(rawFrom, "/admin/dashboard");
+
+      // Use router.push so Next.js handles navigation without full reload.
+      // This also ensures the Supabase session cookie is available immediately.
+      router.push(redirectTo);
     }
   };
 

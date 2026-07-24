@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 interface CompetencyScores {
   Academic: number;
@@ -9,28 +9,98 @@ interface CompetencyScores {
   Impact: number;
 }
 
+// Use the anon client for reading data (subject to RLS)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+);
+
 export async function POST(request: Request) {
   try {
     const url = new URL(request.url);
     const isCron = url.searchParams.get('cron') === 'true';
 
-    // CSRF Check [M-1]
+    // MED-01: Robust CSRF Check — block cross-origin requests.
+    // For same-site requests the Origin header must match the host,
+    // OR the Origin must be absent (server-to-server / same-origin fetch).
     const origin = request.headers.get('origin');
     const host = request.headers.get('host');
-    if (origin && !origin.includes(host || '')) {
-      return NextResponse.json({ error: 'CSRF Protection Triggered' }, { status: 403 });
+    if (origin) {
+      let originHost: string;
+      try {
+        originHost = new URL(origin).host;
+      } catch {
+        // Malformed origin — reject
+        return NextResponse.json({ error: 'Invalid Origin header' }, { status: 403 });
+      }
+      if (originHost !== host) {
+        return NextResponse.json({ error: 'CSRF Protection Triggered' }, { status: 403 });
+      }
     }
+    // If origin is absent (e.g. server-to-server), fall through to auth checks below.
 
-    // 0. AUTHENTICATION CHECK [C-1]
+    // 0. AUTHENTICATION CHECK
     if (isCron) {
+      // HIGH-01 / CRON: Verify using a dedicated CRON_SECRET env var
       const authHeader = request.headers.get('authorization');
-      if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         return NextResponse.json({ error: 'Unauthorized CRON request' }, { status: 401 });
       }
     } else {
+      // HIGH-01: Verify the JWT token against Supabase — not just a cookie name substring check.
+      // Extract the access token from either our custom cookie or the Supabase default.
       const cookieHeader = request.headers.get('cookie') || '';
-      // Check for our custom token or Supabase default auth token
-      if (!cookieHeader.includes('sb-access-token') && !cookieHeader.includes('-auth-token=')) {
+
+      // Try to extract token value from cookie string
+      const tokenMatch =
+        cookieHeader.match(/sb-access-token=([^;]+)/) ||
+        cookieHeader.match(/sb-[^-]+-auth-token(?:\.0)?=([^;]+)/);
+
+      if (!tokenMatch || !tokenMatch[1]) {
+        return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 401 });
+      }
+
+      // Validate the token by calling Supabase — this checks signature and expiry
+      const token = decodeURIComponent(tokenMatch[1]);
+
+      // For chunked tokens (Supabase v2 splits large JWTs), parse the base64 payload
+      let userEmail: string | null = null;
+      try {
+        // Try direct JWT decode (Supabase v1 style / small tokens)
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
+          userEmail = payload.email ?? null;
+        } else {
+          // Chunked / non-JWT — fall back to remote verification
+          const parsed = JSON.parse(token);
+          userEmail = parsed?.user?.email ?? null;
+        }
+      } catch {
+        // Malformed token
+      }
+
+      // Always do a remote verification to ensure the token is valid & not expired
+      const verifyRes = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+          },
+        }
+      );
+
+      if (!verifyRes.ok) {
+        return NextResponse.json({ error: 'Unauthorized. Invalid or expired session.' }, { status: 401 });
+      }
+
+      const verifiedUser = await verifyRes.json();
+      userEmail = verifiedUser.email;
+
+      // Must be the configured admin email
+      const adminEmail = process.env.ADMIN_EMAIL;
+      if (!adminEmail || userEmail !== adminEmail) {
         return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 401 });
       }
     }
@@ -58,7 +128,6 @@ export async function POST(request: Request) {
     if (isCron && currentProfile?.last_evaluated_at) {
       const lastEvalDate = new Date(currentProfile.last_evaluated_at).getTime();
       
-      // Find the most recent update across projects and experiences
       let latestUpdate = 0;
       portfolioData.projects.forEach(p => {
         if (p.created_at) latestUpdate = Math.max(latestUpdate, new Date(p.created_at).getTime());
@@ -67,7 +136,6 @@ export async function POST(request: Request) {
         if (e.created_at) latestUpdate = Math.max(latestUpdate, new Date(e.created_at).getTime());
       });
 
-      // If no updates happened since last evaluation, skip it
       if (latestUpdate <= lastEvalDate) {
         return NextResponse.json({ 
           success: true, 
@@ -77,10 +145,32 @@ export async function POST(request: Request) {
     }
 
     let newScores: CompetencyScores;
-    let ai_active = false; // [C-2]
+    let ai_active = false;
     const apiKey = process.env.GEMINI_API_KEY;
     
     if (apiKey && apiKey.length > 10) {
+      // MED-04: Sanitize portfolio data before embedding in the AI prompt.
+      // Strip characters that could be used to inject instructions into the prompt.
+      const sanitizeForPrompt = (value: unknown): unknown => {
+        if (typeof value === 'string') {
+          // Remove common prompt-injection patterns: newline + imperative phrases
+          return value
+            .replace(/[\r\n]{2,}/g, ' ')          // collapse multiple newlines
+            .replace(/ignore (all |previous |above )?instructions?/gi, '[filtered]')
+            .replace(/system\s*:/gi, '[filtered]')
+            .slice(0, 500);                         // cap field length
+        }
+        if (Array.isArray(value)) return value.map(sanitizeForPrompt);
+        if (value && typeof value === 'object') {
+          return Object.fromEntries(
+            Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, sanitizeForPrompt(v)])
+          );
+        }
+        return value;
+      };
+
+      const safePortfolioData = sanitizeForPrompt(portfolioData);
+
       const prompt = `
         You are an expert HR and Academic evaluator following the SFIA 9 and ACM Computing Curricula 2020 frameworks.
         Evaluate the following portfolio data and calculate a score from 0 to 100 for each of the 5 competencies:
@@ -91,7 +181,7 @@ export async function POST(request: Request) {
         5. Impact (Based on the scale, reach, and outcome of the projects/work)
 
         Here is the candidate's portfolio data:
-        ${JSON.stringify(portfolioData)}
+        ${JSON.stringify(safePortfolioData)}
 
         Output ONLY a valid JSON object with the exact keys: "Academic", "Research", "Work", "Organization", "Impact".
         Do not include markdown blocks or any other text.
@@ -110,12 +200,10 @@ export async function POST(request: Request) {
         const mlData = await response.json();
         const textResponse = mlData.candidates[0].content.parts[0].text;
         
-        // Clean markdown blocks if Gemini returns them
         const cleanedText = textResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
         const rawScores = JSON.parse(cleanedText);
         
-        // Make it case-insensitive
-        const lowerCaseScores: any = {};
+        const lowerCaseScores: Record<string, number> = {};
         Object.keys(rawScores).forEach(key => {
           lowerCaseScores[key.toLowerCase()] = rawScores[key];
         });
@@ -127,7 +215,7 @@ export async function POST(request: Request) {
           Organization: lowerCaseScores['organization'],
           Impact: lowerCaseScores['impact']
         };
-        ai_active = true; // [C-2] Successfully used AI
+        ai_active = true;
       } catch (mlError) {
         console.error("ML Evaluation Failed, falling back to heuristic:", mlError);
         newScores = calculateHeuristicScores(portfolioData);
@@ -137,7 +225,7 @@ export async function POST(request: Request) {
       newScores = calculateHeuristicScores(portfolioData);
     }
 
-    const sanitizeScore = (s: any) => Math.min(100, Math.max(0, parseInt(s) || 60));
+    const sanitizeScore = (s: unknown) => Math.min(100, Math.max(0, parseInt(String(s)) || 60));
     const finalScores = {
       score_academic: sanitizeScore(newScores.Academic),
       score_research: sanitizeScore(newScores.Research),
@@ -166,17 +254,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ 
       success: true, 
       message: "Scores updated successfully",
-      ai_active, // [C-2] Expose this to admin panel
+      ai_active,
       scores: finalScores
     });
 
-  } catch (error: any) {
-    console.error("API Route Error:", error);
+  } catch (error: unknown) {
+    console.error("API Route Error:", error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json({ success: false, message: "An internal server error occurred." }, { status: 500 });
   }
 }
 
-function calculateHeuristicScores(data: any): CompetencyScores {
+function calculateHeuristicScores(data: { projects: unknown[]; experiences: unknown[]; skills: unknown[] }): CompetencyScores {
   const projCount = data.projects.length;
   const expCount = data.experiences.length;
   
@@ -184,8 +272,9 @@ function calculateHeuristicScores(data: any): CompetencyScores {
   let workCount = 0;
   let researchCount = 0;
 
-  data.experiences.forEach((exp: any) => {
-    const role = (exp.role || "").toLowerCase();
+  data.experiences.forEach((exp: unknown) => {
+    const e = exp as Record<string, unknown>;
+    const role = (String(e.role || '')).toLowerCase();
     if (role.includes("staff") || role.includes("member") || role.includes("head") || role.includes("lead")) orgCount++;
     if (role.includes("research") || role.includes("data") || role.includes("analysis")) researchCount++;
     if (role.includes("engineer") || role.includes("developer") || role.includes("intern")) workCount++;
