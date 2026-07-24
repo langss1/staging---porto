@@ -11,7 +11,9 @@ import {
   Wifi, 
   Smartphone, 
   Sparkles,
-  ArrowDownCircle
+  ArrowDownCircle,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 const greatVibes = Great_Vibes({ weight: "400", subsets: ["latin"] });
@@ -94,31 +96,51 @@ function AutoScrollSkills({ items }: { items: string[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const [isInteracting, setIsInteracting] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Reset scroll position and selection when skill category changes
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = 0;
+    }
+    setSelectedIndex(0);
+    setIsInteracting(false);
+  }, [items]);
+
+  // Trigger 3-second hold on user interaction
+  const triggerHold = () => {
+    setIsInteracting(true);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => {
+      setIsInteracting(false);
+    }, 3000); // Hold for 3 seconds, then resume auto-scroll
+  };
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
     const handleInteraction = () => {
-      setIsInteracting(true);
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        setIsInteracting(false);
-      }, 3000); // 3 seconds delay after user stops scrolling
+      triggerHold();
     };
 
     const el = scrollRef.current;
     if (el) {
       el.addEventListener('scroll', handleInteraction, { passive: true });
       el.addEventListener('touchstart', handleInteraction, { passive: true });
+      el.addEventListener('mousedown', handleInteraction, { passive: true });
     }
     return () => {
-      clearTimeout(timeoutId);
+      if (timerRef.current) clearTimeout(timerRef.current);
       if (el) {
         el.removeEventListener('scroll', handleInteraction);
         el.removeEventListener('touchstart', handleInteraction);
+        el.removeEventListener('mousedown', handleInteraction);
       }
     };
-  }, []);
+  }, [items]);
 
+  // Slow Auto-Scroll Loop
   useEffect(() => {
     let animationId: number;
     let lastTime = performance.now();
@@ -128,9 +150,10 @@ function AutoScrollSkills({ items }: { items: string[] }) {
       const inner = innerRef.current;
 
       if (el && inner && !isInteracting) {
-        if (window.innerWidth < 768) {
+        // Auto scroll on mobile or when content overflows
+        if (el.scrollWidth > el.clientWidth) {
           const delta = time - lastTime;
-          el.scrollLeft += 0.04 * delta; // speed
+          el.scrollLeft += 0.02 * delta; // slow pleasant speed (~20px/sec)
           
           // Loop seamlessly
           if (el.scrollLeft >= inner.clientWidth + 8) {
@@ -146,24 +169,84 @@ function AutoScrollSkills({ items }: { items: string[] }) {
     return () => cancelAnimationFrame(animationId);
   }, [isInteracting]);
 
+  const handleArrowClick = (dir: 'left' | 'right') => {
+    triggerHold();
+    const el = scrollRef.current;
+    if (el) {
+      const amount = dir === 'left' ? -120 : 120;
+      el.scrollBy({ left: amount, behavior: 'smooth' });
+    }
+  };
+
+  const handleItemClick = (idx: number) => {
+    setSelectedIndex(idx);
+    triggerHold();
+  };
+
   return (
-    <div 
-      ref={scrollRef}
-      className="flex md:block overflow-x-auto md:overflow-visible [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full"
-    >
-      <div ref={innerRef} className="flex md:flex-wrap gap-2 shrink-0 w-max md:w-full">
-        {items.map(item => (
-           <span key={`orig-${item}`} className="px-3 py-1.5 bg-blue-50/50 text-blue-700 rounded-lg text-sm font-semibold border border-blue-100/50 whitespace-nowrap shrink-0">
-               {item}
-           </span>
-        ))}
-      </div>
-      <div className="flex md:hidden gap-2 shrink-0 ml-2">
-        {items.map(item => (
-           <span key={`dup-${item}`} className="px-3 py-1.5 bg-blue-50/50 text-blue-700 rounded-lg text-sm font-semibold border border-blue-100/50 whitespace-nowrap shrink-0">
-               {item}
-           </span>
-        ))}
+    <div className="relative group/skills w-full">
+      {/* Left Chevron Indicator & Scroll Button (Mobile) */}
+      <button
+        type="button"
+        onClick={() => handleArrowClick('left')}
+        className="md:hidden absolute -left-2.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white/95 shadow-md border border-blue-200 flex items-center justify-center text-blue-600 active:scale-90 transition-transform"
+        aria-label="Scroll left"
+      >
+        <ChevronLeft className="w-4 h-4" />
+      </button>
+
+      {/* Right Chevron Indicator & Scroll Button (Mobile) */}
+      <button
+        type="button"
+        onClick={() => handleArrowClick('right')}
+        className="md:hidden absolute -right-2.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white/95 shadow-md border border-blue-200 flex items-center justify-center text-blue-600 active:scale-90 transition-transform animate-pulse"
+        aria-label="Scroll right"
+      >
+        <ChevronRight className="w-4 h-4" />
+      </button>
+
+      {/* Left Gradient Fade Mask */}
+      <div className="md:hidden absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white via-white/80 to-transparent z-10 pointer-events-none" />
+
+      {/* Right Gradient Fade Mask */}
+      <div className="md:hidden absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white via-white/80 to-transparent z-10 pointer-events-none" />
+
+      {/* Scrollable Items Container */}
+      <div 
+        ref={scrollRef}
+        className="flex md:block overflow-x-auto md:overflow-visible [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full px-3 md:px-0 py-1"
+      >
+        <div ref={innerRef} className="flex md:flex-wrap gap-2 shrink-0 w-max md:w-full">
+          {items.map((item, idx) => (
+            <button
+              key={`orig-${item}-${idx}`}
+              onClick={() => handleItemClick(idx)}
+              className={`px-3 py-1.5 rounded-xl text-xs md:text-sm font-semibold border whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                selectedIndex === idx 
+                  ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20 scale-105" 
+                  : "bg-blue-50/60 text-blue-700 hover:bg-blue-100/70 border-blue-100/70"
+              }`}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+        {/* Duplicate items for seamless continuous looping on mobile */}
+        <div className="flex md:hidden gap-2 shrink-0 ml-2">
+          {items.map((item, idx) => (
+            <button
+              key={`dup-${item}-${idx}`}
+              onClick={() => handleItemClick(idx)}
+              className={`px-3 py-1.5 rounded-xl text-xs md:text-sm font-semibold border whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                selectedIndex === idx 
+                  ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20 scale-105" 
+                  : "bg-blue-50/60 text-blue-700 hover:bg-blue-100/70 border-blue-100/70"
+              }`}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
